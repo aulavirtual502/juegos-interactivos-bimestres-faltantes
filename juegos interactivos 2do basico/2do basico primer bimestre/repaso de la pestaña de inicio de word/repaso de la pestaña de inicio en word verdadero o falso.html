@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✅❌ Verdadero o Falso: Procesador de Texto</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a237e, #4a148c, #1a237e);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #0d47a1;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+
+    .game-area {
+      padding: 25px;
+    }
+
+    .question-card {
+      margin-bottom: 25px;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Paleta de colores por categoría */
+    .q-blue    { background: linear-gradient(135deg, #e3f2fd, #bbdefb); border-left: 5px solid #2196f3; }
+    .q-green   { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); border-left: 5px solid #4caf50; }
+    .q-orange  { background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-left: 5px solid #ff9800; }
+    .q-purple  { background: linear-gradient(135deg, #f3e5f5, #e1bee7); border-left: 5px solid #9c27b0; }
+    .q-brown   { background: linear-gradient(135deg, #efebe9, #d7ccc8); border-left: 5px solid #5d4037; }
+
+    .question-text {
+      font-size: 1.2rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: #212121;
+    }
+
+    .options {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 14px 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex: 1;
+      max-width: 200px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .btn-true {
+      background: #4caf50;
+      color: white;
+    }
+
+    .btn-false {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.selected {
+      transform: scale(0.98);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.8), 0 0 0 6px currentColor !important;
+    }
+
+    .feedback {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 10px;
+      font-weight: 500;
+      display: none;
+      text-align: center;
+    }
+
+    .feedback.correct {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .feedback.incorrect {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .controls {
+      text-align: center;
+      padding: 25px 25px 35px;
+    }
+
+    .check-btn {
+      background: #0288d1;
+      color: white;
+      padding: 16px 40px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 0 6px 15px rgba(2, 136, 209, 0.4);
+    }
+
+    .check-btn:hover {
+      background: #0277bd;
+      transform: scale(1.03);
+    }
+
+    .check-btn:disabled {
+      background: #bdbdbd;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .results {
+      text-align: center;
+      padding: 30px;
+      display: none;
+    }
+
+    .score-display {
+      font-size: 5rem;
+      font-weight: bold;
+      margin: 10px 0;
+      background: linear-gradient(45deg, #4caf50, #2196f3);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .final-message {
+      font-size: 1.4rem;
+      margin-bottom: 25px;
+      color: #212121;
+    }
+
+    .restart-btn {
+      background: #5c6bc0;
+      color: white;
+      padding: 14px 36px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .restart-btn:hover {
+      background: #3949ab;
+    }
+
+    @media (max-width: 600px) {
+      .btn {
+        padding: 12px 16px;
+        font-size: 1rem;
+      }
+      .question-text {
+        font-size: 1.05rem;
+      }
+      .score-display {
+        font-size: 4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>✅❌ Verdadero o Falso</h1>
+      <p class="subtitle">Procesadores de texto — ¿Qué tanto sabes?</p>
+    </header>
+
+    <div class="game-area" id="gameArea">
+      <!-- Las preguntas se generarán aquí -->
+    </div>
+
+    <div class="controls">
+      <button id="checkBtn" class="check-btn">🔍 Verificar respuestas</button>
+    </div>
+
+    <div class="results" id="results">
+      <h2>🎉 ¡Juego completado!</h2>
+      <div class="score-display" id="scoreDisplay">0/10</div>
+      <p class="final-message" id="finalMessage"></p>
+      <button id="restartBtn" class="restart-btn">🔁 Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script>
+    // Convertimos las preguntas a afirmaciones Verdadero/Falso
+    const originalQuestions = [
+      {
+        statement: "El comando \"Copiar formato\" sirve para aplicar el mismo aspecto visual de un texto a otro.",
+        correct: true,
+        category: "blue",
+        explanation: "✅ Correcto. Es su función principal: copiar negrita, fuente, color, etc., sin copiar el contenido."
+      },
+      {
+        statement: "Para escribir H₂O, el \"2\" debe formatearse como superíndice.",
+        correct: false,
+        category: "green",
+        explanation: "❌ Incorrecto. Debe ser <strong>subíndice</strong> (H₂O), no superíndice (H²O)."
+      },
+      {
+        statement: "Las opciones de alineación de texto (izquierda, centro, etc.) se encuentran en el grupo \"Párrafo\".",
+        correct: true,
+        category: "blue",
+        explanation: "✅ Correcto. En Word y otros procesadores, están en la pestaña <em>Inicio</em> → grupo <em>Párrafo</em>."
+      },
+      {
+        statement: "Los \"Estilos\" predefinidos ayudan a mantener una apariencia coherente y uniforme en el documento.",
+        correct: true,
+        category: "green",
+        explanation: "✅ Correcto. Permiten aplicar títulos, subtítulos, etc., con formato consistente y fácil de actualizar."
+      },
+      {
+        statement: "La combinación de herramientas \"Buscar y Reemplazar\" permite cambiar todas las apariciones de una palabra por otra.",
+        correct: true,
+        category: "orange",
+        explanation: "✅ Correcto. Es una de las funciones más útiles para ediciones masivas."
+      },
+      {
+        statement: "El botón \"Mostrar todo\" (símbolo ¶) revela marcas de formato ocultas como saltos de párrafo y espacios.",
+        correct: true,
+        category: "blue",
+        explanation: "✅ Correcto. Muestra caracteres no imprimibles: ¶ (párrafo), · (espacio), → (tabulación), etc."
+      },
+      {
+        statement: "La \"Lista multinivel\" es la herramienta adecuada para crear estructuras jerárquicas como 1., 1.1, a).",
+        correct: true,
+        category: "green",
+        explanation: "✅ Correcto. Permite niveles anidados con numeración/viñetas combinadas."
+      },
+      {
+        statement: "El menú contextual (clic derecho) ofrece acceso rápido a opciones como copiar, pegar y cambiar la fuente.",
+        correct: true,
+        category: "purple",
+        explanation: "✅ Correcto. Es un acceso rápido muy utilizado en interfaces gráficas."
+      },
+      {
+        statement: "La \"Sangría\" es el ajuste de la distancia entre el margen de la página y el comienzo de las líneas de un párrafo.",
+        correct: true,
+        category: "brown",
+        explanation: "✅ Correcto. Hay sangría izquierda, derecha y de primera línea."
+      },
+      {
+        statement: "Al pegar con la opción \"Mantener solo texto\", se conserva el formato original del texto copiado.",
+        correct: false,
+        category: "orange",
+        explanation: "❌ Incorrecto. Esta opción <strong>elimina todo el formato</strong> y pega solo el texto plano."
+      }
+    ];
+
+    function shuffleArray(array) {
+      const a = [...array];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const gameArea = document.getElementById('gameArea');
+    const checkBtn = document.getElementById('checkBtn');
+    const resultsDiv = document.getElementById('results');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const finalMessage = document.getElementById('finalMessage');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let currentQuestions = [];
+
+    function renderGame() {
+      currentQuestions = shuffleArray(originalQuestions);
+      gameArea.innerHTML = '';
+
+      currentQuestions.forEach((q, index) => {
+        const card = document.createElement('div');
+        card.className = `question-card q-${q.category}`;
+        card.dataset.index = index;
+
+        card.innerHTML = `
+          <div class="question-text">${q.statement}</div>
+          <div class="options">
+            <button class="btn btn-true" data-value="true">✅ Verdadero</button>
+            <button class="btn btn-false" data-value="false">❌ Falso</button>
+          </div>
+          <div class="feedback" id="feedback-${index}"></div>
+        `;
+
+        gameArea.appendChild(card);
+      });
+
+      // Añadir eventos a los botones
+      document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          // Desmarcar otros botones de la misma pregunta
+          const card = this.closest('.question-card');
+          card.querySelectorAll('.btn').forEach(b => b.classList.remove('selected'));
+          // Marcar este
+          this.classList.add('selected');
+        });
+      });
+    }
+
+    function checkAnswers() {
+      let score = 0;
+
+      currentQuestions.forEach((q, index) => {
+        const card = document.querySelector(`.question-card[data-index="${index}"]`);
+        const selectedBtn = card.querySelector('.btn.selected');
+        const feedbackEl = document.getElementById(`feedback-${index}`);
+
+        feedbackEl.style.display = 'block';
+
+        if (selectedBtn) {
+          const userAnswer = selectedBtn.dataset.value === 'true';
+          if (userAnswer === q.correct) {
+            score++;
+            feedbackEl.innerHTML = q.explanation;
+            feedbackEl.className = 'feedback correct';
+          } else {
+            feedbackEl.innerHTML = q.explanation;
+            feedbackEl.className = 'feedback incorrect';
+          }
+        } else {
+          feedbackEl.textContent = "⚠️ No seleccionaste ninguna opción.";
+          feedbackEl.className = 'feedback incorrect';
+        }
+      });
+
+      // Mostrar resultados
+      gameArea.style.display = 'none';
+      checkBtn.style.display = 'none';
+      resultsDiv.style.display = 'block';
+
+      scoreDisplay.textContent = `${score}/10`;
+      
+      if (score === 10) {
+        finalMessage.textContent = "¡Increíble! 🌟 Dominas los procesadores de texto.";
+        finalMessage.style.color = "#2e7d32";
+      } else if (score >= 7) {
+        finalMessage.textContent = "¡Excelente trabajo! 🎯 Conocimientos sólidos.";
+        finalMessage.style.color = "#1565c0";
+      } else if (score >= 4) {
+        finalMessage.textContent = "Bien hecho 👍, pero repasa algunos conceptos.";
+        finalMessage.style.color = "#ef6c00";
+      } else {
+        finalMessage.textContent = "📚 Es buen momento para repasar lo básico.";
+        finalMessage.style.color = "#c62828";
+      }
+    }
+
+    function restartGame() {
+      gameArea.style.display = 'block';
+      checkBtn.style.display = 'inline-block';
+      resultsDiv.style.display = 'none';
+      renderGame();
+    }
+
+    // Iniciar
+    renderGame();
+
+    checkBtn.addEventListener('click', checkAnswers);
+    restartBtn.addEventListener('click', restartGame);
+  </script>
+</body>
+</html>

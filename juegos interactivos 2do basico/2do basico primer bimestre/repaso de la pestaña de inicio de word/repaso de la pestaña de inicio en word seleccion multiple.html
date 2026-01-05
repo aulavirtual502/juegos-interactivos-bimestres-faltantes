@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego: Procesador de Texto</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-weight: normal;
+    }
+
+    .quiz {
+      padding: 25px;
+    }
+
+    .question {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border-left: 5px solid #3498db;
+      transition: all 0.3s ease;
+    }
+
+    .question.active {
+      background: #e3f2fd;
+      border-left-color: #e74c3c;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .question h3 {
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option {
+      position: relative;
+      padding: 12px 16px 12px 45px;
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option:hover {
+      background: #f1f8ff;
+      border-color: #3498db;
+    }
+
+    .option input {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .option label {
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .correct {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .incorrect {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .controls {
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      background: #2980b9;
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #1c5980;
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .results {
+      text-align: center;
+      padding: 30px;
+      display: none;
+    }
+
+    .score {
+      font-size: 2rem;
+      margin: 20px 0;
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .final-message {
+      font-size: 1.3rem;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+
+    @media (max-width: 600px) {
+      .question h3 {
+        font-size: 1.1rem;
+      }
+      button {
+        padding: 12px 20px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔍 Prueba tus conocimientos</h1>
+      <p class="subtitle">Procesadores de texto - Selección múltiple</p>
+    </header>
+
+    <div class="quiz" id="quiz">
+      <!-- Las preguntas se generarán con JS -->
+    </div>
+
+    <div class="controls">
+      <button id="submitBtn">Verificar respuestas</button>
+    </div>
+
+    <div class="results" id="results">
+      <h2>🎉 ¡Juego completado!</h2>
+      <p class="final-message" id="finalMessage"></p>
+      <div class="score" id="score">0/10</div>
+      <button id="restartBtn">🔁 Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script>
+    // Base de preguntas (sin numeración)
+    const originalQuestions = [
+      {
+        text: "¿Cuál es la función principal del comando \"Copiar formato\"?",
+        options: [
+          "Guardar el documento actual en un formato diferente.",
+          "Aplicar el mismo aspecto visual de un texto a otro.",
+          "Copiar una imagen y su posición exacta.",
+          "Duplicar un párrafo completo en otra ubicación."
+        ],
+        correct: 1
+      },
+      {
+        text: "Para escribir correctamente una fórmula química como H₂O, ¿qué herramienta de formato se debe usar en el \"2\"?",
+        options: [
+          "Efectos de texto",
+          "Tachado",
+          "Superíndice",
+          "Subíndice"
+        ],
+        correct: 3
+      },
+      {
+        text: "¿En qué grupo de herramientas se encuentran las opciones para alinear un texto a la izquierda, centro, derecha o justificado?",
+        options: [
+          "Párrafo",
+          "Estilos",
+          "Portapapeles",
+          "Fuente"
+        ],
+        correct: 0
+      },
+      {
+        text: "¿Qué ventaja principal ofrecen los \"Estilos\" predefinidos en un procesador de texto?",
+        options: [
+          "Corrigen automáticamente los errores ortográficos.",
+          "Convierten el documento directamente a una presentación.",
+          "Permiten insertar tablas y gráficos automáticamente.",
+          "Ayudan a mantener una apariencia coherente y uniforme en el documento."
+        ],
+        correct: 3
+      },
+      {
+        text: "Si necesitas cambiar una palabra específica por otra en todas sus apariciones dentro de un documento, ¿qué par de herramientas usarías?",
+        options: [
+          "Seleccionar y Borrar",
+          "Buscar y Reemplazar",
+          "Cortar y Pegar",
+          "Copiar y Pegar"
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué botón permite visualizar marcas de formato ocultas como los saltos de párrafo y los espacios en blanco?",
+        options: [
+          "Viñetas",
+          "Interlineado",
+          "Bordes",
+          "Mostrar todo (símbolo ¶)"
+        ],
+        correct: 3
+      },
+      {
+        text: "¿Qué herramienta es la más adecuada para crear un esquema o una estructura jerárquica con varios niveles (por ejemplo: 1., 1.1, a))?",
+        options: [
+          "Función Ordenar",
+          "Lista Multinivel",
+          "Numeración simple",
+          "Viñetas con símbolos"
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Cómo se accede comúnmente a un menú rápido que contiene opciones frecuentes como copiar, pegar y cambiar la fuente?",
+        options: [
+          "Presionando la tecla \"Insert\".",
+          "Utilizando el clic derecho del mouse.",
+          "Haciendo doble clic en la barra de título.",
+          "Desde la pestaña \"Archivo\"."
+        ],
+        correct: 1
+      },
+      {
+        text: "¿Qué término describe el ajuste de la distancia entre el margen de la página y el comienzo de las líneas de un párrafo?",
+        options: [
+          "Espaciado anterior",
+          "Interlineado",
+          "Alineación",
+          "Sangría"
+        ],
+        correct: 3
+      },
+      {
+        text: "Al pegar texto copiado, la opción \"Mantener solo texto\" resulta en:",
+        options: [
+          "Un pegado que conserva el formato original (fuente, color, tamaño).",
+          "Un pegado del contenido textual sin ningún formato adjunto.",
+          "La inserción del texto como un objeto o imagen no editable.",
+          "Un pegado donde el texto se adapta al formato del lugar de destino."
+        ],
+        correct: 1
+      }
+    ];
+
+    // Función para barajar (Fisher-Yates)
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // DOM elements
+    const quizDiv = document.getElementById('quiz');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultsDiv = document.getElementById('results');
+    const scoreDiv = document.getElementById('score');
+    const finalMessage = document.getElementById('finalMessage');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let currentQuestions = [];
+
+    // Render questions (ya sin numeración)
+    function renderQuiz() {
+      // Barajar preguntas al renderizar
+      currentQuestions = shuffleArray(originalQuestions);
+      
+      quizDiv.innerHTML = '';
+      currentQuestions.forEach((q, index) => {
+        const questionEl = document.createElement('div');
+        questionEl.className = 'question';
+        questionEl.innerHTML = `
+          <h3>${q.text}</h3>
+          <div class="options">
+            ${q.options.map((opt, i) => `
+              <div class="option">
+                <input type="radio" name="q${index}" id="q${index}o${i}" value="${i}">
+                <label for="q${index}o${i}">${String.fromCharCode(97 + i)}) ${opt}</label>
+              </div>
+            `).join('')}
+          </div>
+          <div class="feedback" id="feedback${index}"></div>
+        `;
+        quizDiv.appendChild(questionEl);
+      });
+    }
+
+    // Check answers
+    function checkAnswers() {
+      let score = 0;
+      const allQuestions = document.querySelectorAll('.question');
+      
+      currentQuestions.forEach((q, index) => {
+        const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
+        const feedbackEl = document.getElementById(`feedback${index}`);
+        const questionEl = allQuestions[index];
+
+        if (selectedOption) {
+          const userAnswer = parseInt(selectedOption.value);
+          if (userAnswer === q.correct) {
+            score++;
+            feedbackEl.textContent = "✅ ¡Correcto!";
+            feedbackEl.className = "feedback correct";
+          } else {
+            feedbackEl.textContent = `❌ Incorrecto. La respuesta correcta es: ${String.fromCharCode(97 + q.correct)}) ${q.options[q.correct]}`;
+            feedbackEl.className = "feedback incorrect";
+          }
+          feedbackEl.style.display = "block";
+          questionEl.classList.add('active');
+        } else {
+          feedbackEl.textContent = "⚠️ No seleccionaste ninguna opción.";
+          feedbackEl.className = "feedback incorrect";
+          feedbackEl.style.display = "block";
+          questionEl.classList.add('active');
+        }
+      });
+
+      // Show results
+      quizDiv.style.display = 'none';
+      submitBtn.style.display = 'none';
+      resultsDiv.style.display = 'block';
+
+      scoreDiv.textContent = `${score}/10`;
+      
+      let message = "";
+      if (score === 10) {
+        message = "¡Excelente! Dominas los procesadores de texto.";
+        finalMessage.style.color = "#27ae60";
+      } else if (score >= 7) {
+        message = "¡Muy bien! Tienes buenos conocimientos.";
+        finalMessage.style.color = "#2980b9";
+      } else if (score >= 4) {
+        message = "Bien, pero puedes repasar algunos conceptos.";
+        finalMessage.style.color = "#f39c12";
+      } else {
+        message = "Es un buen momento para repasar los fundamentos.";
+        finalMessage.style.color = "#e74c3c";
+      }
+      finalMessage.textContent = message;
+    }
+
+    // Restart quiz → ¡nuevo orden aleatorio!
+    function restartQuiz() {
+      quizDiv.style.display = 'block';
+      submitBtn.style.display = 'inline-block';
+      resultsDiv.style.display = 'none';
+      renderQuiz(); // Esto genera un nuevo orden
+    }
+
+    // Initialize
+    renderQuiz();
+
+    // Event listeners
+    submitBtn.addEventListener('click', checkAnswers);
+    restartBtn.addEventListener('click', restartQuiz);
+  </script>
+</body>
+</html>

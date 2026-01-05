@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Arrastra las Respuestas Correctas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ff9ff3;
+            background: linear-gradient(90deg, #ff9ff3 0%, #f368e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #00d2d3;
+            font-size: 1.3rem;
+            font-weight: 300;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, rgba(255, 159, 243, 0.1) 0%, rgba(243, 104, 224, 0.1) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #ff9ff3;
+            border-right: 5px solid #f368e0;
+        }
+        
+        .instructions h2 {
+            color: #ff9ff3;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .instructions p {
+            line-height: 1.6;
+            color: #dff9fb;
+            font-size: 1.1rem;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .answers-section {
+            flex: 1;
+            min-width: 300px;
+            background: linear-gradient(135deg, rgba(9, 132, 227, 0.2) 0%, rgba(83, 51, 237, 0.2) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(9, 132, 227, 0.3);
+        }
+        
+        .questions-section {
+            flex: 1;
+            min-width: 300px;
+            background: linear-gradient(135deg, rgba(255, 107, 129, 0.2) 0%, rgba(255, 71, 87, 0.2) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255, 107, 129, 0.3);
+        }
+        
+        .section-title {
+            color: #00d2d3;
+            font-size: 1.7rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .answers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .answer-item {
+            background: linear-gradient(135deg, #0984e3 0%, #6c5ce7 100%);
+            border-radius: 12px;
+            padding: 18px;
+            cursor: move;
+            transition: all 0.4s ease;
+            border: 2px solid transparent;
+            min-height: 75px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(9, 132, 227, 0.3);
+        }
+        
+        .answer-item:hover:not(.used) {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(9, 132, 227, 0.5);
+            border-color: #00d2d3;
+        }
+        
+        .answer-item.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            transform: scale(0.95);
+        }
+        
+        .answer-item.dragging {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(9, 132, 227, 0.7);
+        }
+        
+        .questions-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .question-slot {
+            background: linear-gradient(135deg, rgba(45, 52, 54, 0.3) 0%, rgba(99, 110, 114, 0.3) 100%);
+            border-radius: 12px;
+            padding: 25px;
+            min-height: 140px;
+            border: 2px dashed #ff9ff3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .question-slot.hovered:not(.answered) {
+            background: linear-gradient(135deg, rgba(255, 107, 129, 0.3) 0%, rgba(255, 71, 87, 0.3) 100%);
+            border-color: #00d2d3;
+            transform: scale(1.02);
+        }
+        
+        .question-slot.correct {
+            background: linear-gradient(135deg, rgba(46, 213, 115, 0.2) 0%, rgba(39, 174, 96, 0.2) 100%);
+            border: 3px solid #2ecc71;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        .question-slot.incorrect {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(192, 57, 43, 0.2) 100%);
+            border: 3px solid #e74c3c;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .question-slot.answered {
+            cursor: not-allowed;
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+            font-weight: 500;
+        }
+        
+        .dropped-answer {
+            background: linear-gradient(135deg, #0984e3 0%, #6c5ce7 100%);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 10px 0;
+            border: 2px solid #00d2d3;
+            cursor: default;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            color: white;
+        }
+        
+        .dropped-answer.correct {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border-color: #27ae60;
+        }
+        
+        .dropped-answer.incorrect {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border-color: #c0392b;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1rem;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback.correct {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.3) 0%, rgba(39, 174, 96, 0.3) 100%);
+            color: #2ecc71;
+            border-left: 4px solid #2ecc71;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feedback.incorrect {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.3) 0%, rgba(192, 57, 43, 0.3) 100%);
+            color: #ff7675;
+            border-left: 4px solid #e74c3c;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 40px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(255, 159, 243, 0.4);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(255, 159, 243, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #check-btn {
+            background: linear-gradient(135deg, #00d2d3 0%, #01a3a4 100%);
+            box-shadow: 0 8px 25px rgba(0, 210, 211, 0.4);
+        }
+        
+        #check-btn:hover:not(:disabled) {
+            box-shadow: 0 12px 30px rgba(0, 210, 211, 0.6);
+        }
+        
+        #restart-btn {
+            background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+        }
+        
+        #restart-btn:hover {
+            background: linear-gradient(135deg, #f368e0 0%, #e056fd 100%);
+        }
+        
+        .result-container {
+            background: linear-gradient(135deg, rgba(9, 132, 227, 0.2) 0%, rgba(83, 51, 237, 0.2) 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 30px;
+            display: none;
+            border: 2px solid #00d2d3;
+            animation: slideIn 0.8s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-title {
+            color: #ff9ff3;
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .final-score {
+            font-size: 6rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff9ff3 0%, #00d2d3 50%, #0984e3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 25px 0;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .message {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #dff9fb;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .score-container {
+            background: linear-gradient(135deg, rgba(255, 107, 129, 0.2) 0%, rgba(255, 71, 87, 0.2) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+            border: 2px solid rgba(255, 107, 129, 0.3);
+        }
+        
+        .score-text {
+            font-size: 1.7rem;
+            color: #ff9ff3;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .score-value {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #ff9ff3 0%, #00d2d3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .matched-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(9, 132, 227, 0.1) 0%, rgba(83, 51, 237, 0.1) 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #00d2d3;
+            transition: all 0.3s ease;
+        }
+        
+        .matched-pair:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .question-part {
+            flex: 2;
+            padding-right: 20px;
+            color: #dff9fb;
+            font-size: 1.1rem;
+        }
+        
+        .answer-part {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .remove-btn {
+            color: #ff7675;
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 15px;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .remove-btn:hover {
+            color: #ff4757;
+            transform: scale(1.2);
+        }
+        
+        .locked {
+            cursor: not-allowed !important;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #ff9ff3;
+            border-radius: 50%;
+            opacity: 0;
+            animation: confettiFall 3s linear forwards;
+        }
+        
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                flex-direction: column;
+            }
+            
+            .answers-section, .questions-section {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Arrastra y Suelta las Respuestas</h1>
+            <p class="subtitle">Lleva cada respuesta a su pregunta correspondiente - ¡Sin segundas oportunidades!</p>
+        </header>
+        
+        <div class="instructions">
+            <h2>Instrucciones del Juego</h2>
+            <p>Arrastra cada respuesta desde la sección izquierda y suéltala sobre la pregunta correspondiente en la sección derecha. Cada pregunta solo puede recibir una respuesta. <strong>¡Cuidado! Una vez que sueltas una respuesta, no podrás cambiarla.</strong> Se mostrará inmediatamente si la respuesta es correcta o incorrecta.</p>
+        </div>
+        
+        <div class="score-container">
+            <div class="score-text">Puntuación:</div>
+            <div class="score-value" id="score-value">0/10</div>
+        </div>
+        
+        <div class="game-container">
+            <div class="answers-section">
+                <h2 class="section-title">Respuestas</h2>
+                <div class="answers-list" id="answers-list">
+                    <!-- Las respuestas arrastrables se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="questions-section">
+                <h2 class="section-title">Preguntas</h2>
+                <div class="questions-list" id="questions-list">
+                    <!-- Las preguntas con slots se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="check-btn">Verificar Todas</button>
+            <button id="restart-btn">Reiniciar Juego</button>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <h2 class="result-title">¡Juego Completado!</h2>
+            <div class="final-score" id="final-score">0/10</div>
+            <p class="message" id="result-message"></p>
+            <div id="results-list"></div>
+            <button id="play-again-btn">Jugar Nuevamente</button>
+        </div>
+        
+        <footer>
+            <p>Juego educativo sobre videos y audio en presentaciones - Diseñado con HTML, CSS y JavaScript</p>
+        </footer>
+    </div>
+
+    <script>
+        // Datos del juego - Preguntas y respuestas correctas
+        const gameData = [
+            {
+                id: 1,
+                question: "¿Cuál es el formato de video recomendado para insertar en una presentación debido a su compatibilidad y peso ligero?",
+                answer: "MP4"
+            },
+            {
+                id: 2,
+                question: "Después de insertar un video, ¿qué pestaña nueva aparece para ajustar elementos como el color, borde y sombra?",
+                answer: "Formato del Video"
+            },
+            {
+                id: 3,
+                question: "En la pestaña Reproducción de un video, ¿qué función permite eliminar segmentos del inicio o final del clip?",
+                answer: "Recortar video"
+            },
+            {
+                id: 4,
+                question: "¿Qué opción de reproducción se debe activar si queremos que un video comience a sonar sin necesidad de hacer clic sobre él durante la presentación?",
+                answer: "Iniciar automáticamente"
+            },
+            {
+                id: 5,
+                question: "Para que una canción o audio de fondo suene continuamente a través de todas las diapositivas, ¿qué opción debemos seleccionar en la pestaña Reproducción del audio?",
+                answer: "Reproducir en todas las diapositivas"
+            },
+            {
+                id: 6,
+                question: "¿Qué función se utiliza para dar un efecto de entrada o salida suave a un video o audio?",
+                answer: "Fundido"
+            },
+            {
+                id: 7,
+                question: "¿Cuál es el consejo profesional respecto al volumen de un audio de fondo insertado en una presentación?",
+                answer: "Mantenerlo bajo para que no distraiga"
+            },
+            {
+                id: 8,
+                question: "Al insertar un audio, ¿qué opción permite que el ícono del sonido no sea visible durante la presentación?",
+                answer: "Ocultar durante presentación"
+            },
+            {
+                id: 9,
+                question: "¿Qué opción es útil para un video decorativo o un clip corto que debe repetirse constantemente mientras la diapositiva esté visible?",
+                answer: "Repetir hasta su interrupción"
+            },
+            {
+                id: 10,
+                question: "Para insertar un video almacenado en el computador, ¿qué ruta de menú se debe seguir?",
+                answer: "Insertar → Video → Video en mi PC"
+            }
+        ];
+
+        // Variables del juego
+        let score = 0;
+        let matches = [];
+        let draggedAnswer = null;
+        let answeredQuestions = new Set();
+
+        // Elementos DOM
+        const answersList = document.getElementById('answers-list');
+        const questionsList = document.getElementById('questions-list');
+        const checkBtn = document.getElementById('check-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const resultContainer = document.getElementById('result-container');
+        const finalScore = document.getElementById('final-score');
+        const resultMessage = document.getElementById('result-message');
+        const scoreValue = document.getElementById('score-value');
+        const resultsList = document.getElementById('results-list');
+
+        // Función para crear confetti
+        function createConfetti() {
+            const colors = ['#ff9ff3', '#f368e0', '#00d2d3', '#0984e3', '#6c5ce7', '#2ecc71'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        // Inicializar juego
+        function initGame() {
+            score = 0;
+            matches = [];
+            draggedAnswer = null;
+            answeredQuestions.clear();
+            
+            // Limpiar contenedores
+            answersList.innerHTML = '';
+            questionsList.innerHTML = '';
+            resultContainer.style.display = 'none';
+            
+            // Actualizar puntuación
+            scoreValue.textContent = `${score}/10`;
+            
+            // Mezclar respuestas aleatoriamente
+            const shuffledAnswers = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Crear elementos de respuesta arrastrables
+            shuffledAnswers.forEach(item => {
+                const answerElement = document.createElement('div');
+                answerElement.className = 'answer-item';
+                answerElement.id = `answer-${item.id}`;
+                answerElement.draggable = true;
+                answerElement.dataset.id = item.id;
+                answerElement.dataset.answer = item.answer;
+                
+                answerElement.innerHTML = `
+                    <div class="answer-text">${item.answer}</div>
+                `;
+                
+                // Eventos de arrastre
+                answerElement.addEventListener('dragstart', handleDragStart);
+                answerElement.addEventListener('dragend', handleDragEnd);
+                
+                answersList.appendChild(answerElement);
+            });
+            
+            // Mezclar preguntas aleatoriamente
+            const shuffledQuestions = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Crear slots de pregunta
+            shuffledQuestions.forEach(item => {
+                const questionSlot = document.createElement('div');
+                questionSlot.className = 'question-slot';
+                questionSlot.id = `question-${item.id}`;
+                questionSlot.dataset.id = item.id;
+                questionSlot.dataset.question = item.question;
+                questionSlot.dataset.correctAnswer = item.answer;
+                
+                questionSlot.innerHTML = `
+                    <div class="question-text">${item.question}</div>
+                    <div class="feedback" id="feedback-${item.id}"></div>
+                `;
+                
+                // Eventos para soltar
+                questionSlot.addEventListener('dragover', handleDragOver);
+                questionSlot.addEventListener('dragenter', handleDragEnter);
+                questionSlot.addEventListener('dragleave', handleDragLeave);
+                questionSlot.addEventListener('drop', handleDrop);
+                
+                questionsList.appendChild(questionSlot);
+            });
+            
+            // Habilitar botón de verificar
+            checkBtn.disabled = false;
+        }
+
+        // Manejar inicio de arrastre
+        function handleDragStart(e) {
+            if (this.classList.contains('used')) {
+                e.preventDefault();
+                return;
+            }
+            
+            draggedAnswer = this;
+            this.classList.add('dragging');
+            
+            // Establecer datos de arrastre
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        // Manejar fin de arrastre
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            
+            // Remover clases de hover de todos los slots
+            document.querySelectorAll('.question-slot').forEach(slot => {
+                slot.classList.remove('hovered');
+            });
+        }
+
+        // Permitir soltar
+        function handleDragOver(e) {
+            if (this.classList.contains('answered')) {
+                e.preventDefault();
+                return false;
+            }
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        // Cuando un elemento arrastrado entra en un slot
+        function handleDragEnter(e) {
+            if (this.classList.contains('answered')) {
+                return;
+            }
+            e.preventDefault();
+            this.classList.add('hovered');
+        }
+
+        // Cuando un elemento arrastrado sale de un slot
+        function handleDragLeave() {
+            this.classList.remove('hovered');
+        }
+
+        // Manejar soltar elemento
+        function handleDrop(e) {
+            if (this.classList.contains('answered')) {
+                return;
+            }
+            
+            e.preventDefault();
+            this.classList.remove('hovered');
+            
+            // Obtener ID de la respuesta arrastrada
+            const answerId = e.dataTransfer.getData('text/plain');
+            const answerElement = document.getElementById(`answer-${answerId}`);
+            
+            // Verificar si la respuesta ya fue usada
+            if (answerElement.classList.contains('used')) {
+                return;
+            }
+            
+            // Marcar pregunta como respondida
+            this.classList.add('answered');
+            answeredQuestions.add(parseInt(this.dataset.id));
+            
+            // Marcar respuesta como usada
+            answerElement.classList.add('used');
+            answerElement.draggable = false;
+            
+            // Agregar respuesta al slot
+            const droppedAnswer = document.createElement('div');
+            droppedAnswer.className = 'dropped-answer';
+            droppedAnswer.textContent = answerElement.dataset.answer;
+            droppedAnswer.dataset.answerId = answerId;
+            
+            this.appendChild(droppedAnswer);
+            
+            // Remover respuesta de la lista de respuestas
+            answerElement.style.opacity = '0.5';
+            answerElement.style.transform = 'scale(0.95)';
+            
+            // Verificar si la respuesta es correcta
+            const isCorrect = answerElement.dataset.answer === this.dataset.correctAnswer;
+            
+            // Aplicar estilos según si es correcta o incorrecta
+            droppedAnswer.classList.add(isCorrect ? 'correct' : 'incorrect');
+            this.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            // Mostrar feedback inmediato
+            const feedback = document.getElementById(`feedback-${this.dataset.id}`);
+            feedback.textContent = isCorrect ? "¡CORRECTO! ✓" : "INCORRECTO ✗";
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedback.style.display = 'block';
+            
+            // Actualizar puntuación si es correcta
+            if (isCorrect) {
+                score++;
+                scoreValue.textContent = `${score}/10`;
+                
+                // Animación para respuestas correctas
+                this.style.animation = 'pulse 0.5s ease';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 500);
+            }
+            
+            // Registrar el match
+            const match = {
+                questionId: parseInt(this.dataset.id),
+                answerId: parseInt(answerId),
+                question: this.dataset.question,
+                correctAnswer: this.dataset.correctAnswer,
+                droppedAnswer: answerElement.dataset.answer,
+                isCorrect: isCorrect
+            };
+            
+            matches.push(match);
+            
+            // Si todas las preguntas han sido respondidas, mostrar confetti si es perfecto
+            if (answeredQuestions.size === gameData.length) {
+                checkBtn.disabled = false;
+                
+                if (score === gameData.length) {
+                    setTimeout(() => {
+                        createConfetti();
+                    }, 500);
+                }
+            }
+            
+            // Verificar si todas las respuestas han sido colocadas
+            checkAllAnswersPlaced();
+        }
+
+        // Verificar si todas las respuestas han sido colocadas
+        function checkAllAnswersPlaced() {
+            const remainingAnswers = document.querySelectorAll('.answer-item:not(.used)').length;
+            
+            if (remainingAnswers === 0) {
+                checkBtn.textContent = "Ver Resultados Finales";
+            }
+        }
+
+        // Verificar todas las respuestas
+        function checkAllAnswers() {
+            // Verificar que todas las preguntas tengan respuesta
+            if (answeredQuestions.size < gameData.length) {
+                const unansweredCount = gameData.length - answeredQuestions.size;
+                alert(`Todavía hay ${unansweredCount} preguntas sin respuesta. Por favor, arrastra todas las respuestas antes de verificar.`);
+                return;
+            }
+            
+            // Mostrar resultados finales
+            showFinalResults();
+        }
+
+        // Mostrar resultados finales
+        function showFinalResults() {
+            // Calcular porcentaje
+            const percentage = (score / gameData.length) * 100;
+            
+            // Determinar mensaje según puntuación
+            let message = "";
+            if (percentage === 100) {
+                message = "¡PERFECTO! 🎉 Eres un experto en multimedia para presentaciones.";
+                createConfetti();
+            } else if (percentage >= 80) {
+                message = "¡EXCELENTE! 👍 Tienes un conocimiento sobresaliente sobre el tema.";
+            } else if (percentage >= 60) {
+                message = "¡MUY BIEN! 😊 Tienes buenos conocimientos, pero hay detalles por mejorar.";
+            } else if (percentage >= 40) {
+                message = "BUEN INTENTO 🤔 Te recomendamos repasar los conceptos básicos.";
+            } else {
+                message = "¡ANÍMATE! 💪 Necesitas estudiar más sobre videos y audio en presentaciones.";
+            }
+            
+            // Actualizar elementos de resultado
+            finalScore.textContent = `${score}/${gameData.length}`;
+            resultMessage.textContent = message;
+            
+            // Mostrar resultados detallados
+            resultsList.innerHTML = '<h3 style="color:#ff9ff3; margin-bottom:20px; text-shadow: 0 1px 3px rgba(0,0,0,0.3);">Resultados Detallados:</h3>';
+            
+            gameData.forEach(item => {
+                const match = matches.find(m => m.questionId === item.id);
+                const isCorrect = match ? match.isCorrect : false;
+                
+                const resultItem = document.createElement('div');
+                resultItem.className = 'matched-pair';
+                
+                resultItem.innerHTML = `
+                    <div class="question-part">
+                        ${item.question}
+                    </div>
+                    <div class="answer-part" style="color:${isCorrect ? '#2ecc71' : '#e74c3c'}">
+                        ${match ? match.droppedAnswer : 'Sin respuesta'} 
+                        <span style="font-size:1.5rem;">${isCorrect ? '✓' : '✗'}</span>
+                    </div>
+                `;
+                
+                resultsList.appendChild(resultItem);
+            });
+            
+            // Mostrar contenedor de resultados con animación
+            resultContainer.style.display = 'block';
+            resultContainer.style.animation = 'slideIn 0.8s ease';
+        }
+
+        // Event Listeners
+        checkBtn.addEventListener('click', checkAllAnswers);
+        restartBtn.addEventListener('click', initGame);
+        playAgainBtn.addEventListener('click', initGame);
+
+        // Inicializar el juego al cargar la página
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

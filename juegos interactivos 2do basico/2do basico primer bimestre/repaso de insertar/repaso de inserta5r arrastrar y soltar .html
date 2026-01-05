@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Arrastrar y Soltar: Pestaña Insertar en Word</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #4A6FA5 0%, #2E5984 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .answers-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .questions-container {
+            flex: 2;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            color: #2E5984;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4A6FA5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .answers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .answer-item {
+            padding: 18px;
+            background-color: #f0f5ff;
+            border: 3px dashed #4A6FA5;
+            border-radius: 15px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2E5984;
+            text-align: center;
+        }
+        
+        .answer-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(74, 111, 165, 0.2);
+            background-color: #e1eaff;
+        }
+        
+        .answer-item.dragging {
+            opacity: 0.6;
+            transform: scale(0.98);
+        }
+        
+        .answer-item.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f8f8;
+            border: 3px dashed #cccccc;
+        }
+        
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .question-item {
+            padding: 20px;
+            background-color: #f9fbff;
+            border-radius: 15px;
+            border-left: 6px solid #4A6FA5;
+            transition: all 0.3s ease;
+        }
+        
+        .question-item.drag-over {
+            background-color: #e8f4ff;
+            border-left: 6px solid #FF9800;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .answer-dropzone {
+            min-height: 70px;
+            background-color: white;
+            border: 3px dashed #cccccc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #666;
+        }
+        
+        .answer-dropzone.has-answer {
+            border: 3px solid #4A6FA5;
+            background-color: #f0f5ff;
+            color: #2E5984;
+            font-weight: 600;
+        }
+        
+        .answer-dropzone.correct {
+            border: 3px solid #2ecc71;
+            background-color: #e8f7ef;
+            color: #155724;
+        }
+        
+        .answer-dropzone.incorrect {
+            border: 3px solid #e74c3c;
+            background-color: #fdeded;
+            color: #721c24;
+        }
+        
+        .answer-dropzone:hover {
+            background-color: #f5f9ff;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #check-btn {
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            color: white;
+            margin-left: auto;
+        }
+        
+        #reset-btn {
+            background: linear-gradient(to right, #FF7F50, #FF6347);
+            color: white;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .feedback-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback-correct {
+            background-color: #e8f7ef;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+        
+        .feedback-incorrect {
+            background-color: #fdeded;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+        
+        .feedback-final {
+            background: linear-gradient(to right, #f0f5ff, #f7f0ff);
+            color: #333;
+            border: 2px solid #4A6FA5;
+            display: block;
+        }
+        
+        .results-summary {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            text-align: center;
+        }
+        
+        .results-summary h2 {
+            color: #2E5984;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #4A6FA5, #2E5984);
+            color: white;
+            box-shadow: 0 10px 25px rgba(46, 89, 132, 0.3);
+        }
+        
+        .score-percentage {
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+        
+        .score-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .instructions h3 {
+            color: #2E5984;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 1.7;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .question-number {
+            display: inline-block;
+            background-color: #4A6FA5;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 36px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .answers-container, .questions-container {
+                width: 100%;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .score-percentage {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.9rem;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .answer-item {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            
+            .question-number {
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-mouse-pointer"></i> Juego de Arrastrar y Soltar</h1>
+            <p class="subtitle">Arrastra las respuestas correctas de la izquierda a cada pregunta de la derecha. ¡Pon a prueba tus conocimientos sobre la pestaña Insertar en Word!</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="answers-container">
+                <h2 class="section-title"><i class="fas fa-grip-vertical"></i> Respuestas</h2>
+                <p>Arrastra estas respuestas a las preguntas de la derecha:</p>
+                
+                <div class="answers-list" id="answers-list">
+                    <!-- Las respuestas se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="questions-container">
+                <h2 class="section-title"><i class="fas fa-question-circle"></i> Preguntas</h2>
+                <p>Arrastra la respuesta correcta de la izquierda a cada recuadro:</p>
+                
+                <div class="questions-list" id="questions-list">
+                    <!-- Las preguntas se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="reset-btn">
+                <i class="fas fa-redo-alt"></i> Reiniciar Juego
+            </button>
+            <button id="check-btn">
+                <i class="fas fa-check-circle"></i> Verificar Respuestas
+            </button>
+        </div>
+        
+        <div class="feedback-container" id="feedback-container">
+            <!-- El feedback se mostrará aquí -->
+        </div>
+        
+        <div class="results-summary" id="results-summary">
+            <h2><i class="fas fa-trophy"></i> Resultados Finales</h2>
+            <div class="score-circle">
+                <div class="score-percentage" id="final-percentage">0%</div>
+                <div class="score-text" id="final-score">0/10</div>
+            </div>
+            
+            <button id="play-again-btn" style="margin-top: 30px;">
+                <i class="fas fa-play-circle"></i> Jugar Nuevamente
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+            <ol>
+                <li>Lee cada pregunta cuidadosamente.</li>
+                <li>Arrastra la respuesta correcta desde el panel izquierdo y suéltala en el recuadro correspondiente a cada pregunta.</li>
+                <li>Puedes cambiar tu respuesta arrastrando una diferente a la misma pregunta.</li>
+                <li>Haz clic en "Verificar Respuestas" para comprobar si todas tus respuestas son correctas.</li>
+                <li>Puedes reiniciar el juego en cualquier momento con el botón correspondiente.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego: preguntas y respuestas correctas
+        const gameData = [
+            {
+                id: 1,
+                question: "¿Qué herramienta de la pestaña Insertar se utiliza específicamente para agregar una página inicial con un diseño predefinido y profesional a un documento?",
+                correctAnswer: "Portada"
+            },
+            {
+                id: 2,
+                question: "¿Cuál de las siguientes opciones permite crear una nueva página en una posición específica del documento sin usar repetidamente la tecla 'Enter'?",
+                correctAnswer: "Salto de página"
+            },
+            {
+                id: 3,
+                question: "Para organizar información de manera estructurada en filas y columnas, ¿qué elemento principal se inserta desde la pestaña correspondiente?",
+                correctAnswer: "Tabla"
+            },
+            {
+                id: 4,
+                question: "¿Qué grupo de herramientas incluye opciones para agregar elementos visuales como imágenes, formas, SmartArt y gráficos a un documento?",
+                correctAnswer: "Ilustraciones"
+            },
+            {
+                id: 5,
+                question: "Si necesitas representar un proceso o una jerarquía de manera gráfica y organizada, ¿qué herramienta de las 'Ilustraciones' es la más adecuada?",
+                correctAnswer: "SmartArt"
+            },
+            {
+                id: 6,
+                question: "¿Para qué se utilizan principalmente los encabezados y pies de página en un documento?",
+                correctAnswer: "Para agregar números de página y mantener la organización en todo el documento."
+            },
+            {
+                id: 7,
+                question: "¿Qué herramienta del grupo 'Texto' permite escribir contenido en una posición específica y con un diseño independiente dentro de la página?",
+                correctAnswer: "Cuadro de texto"
+            },
+            {
+                id: 8,
+                question: "Si necesitas insertar un carácter especial como el símbolo de grado (°) o el de moneda (€), ¿en qué grupo de la pestaña Insertar debes buscar?",
+                correctAnswer: "Símbolos"
+            },
+            {
+                id: 9,
+                question: "¿Qué opción se utilizaría para mostrar datos numéricos de forma visual, como en un gráfico de barras o circular?",
+                correctAnswer: "Gráficos"
+            },
+            {
+                id: 10,
+                question: "La función principal de la pestaña Insertar en Word es:",
+                correctAnswer: "Enriquecer los documentos con contenido visual, estructural y complementario."
+            }
+        ];
+
+        // Variables globales del juego
+        let userAnswers = {};
+        let answerElements = [];
+        let gameInProgress = true;
+
+        // Inicializar el juego
+        function initGame() {
+            // Reiniciar variables
+            userAnswers = {};
+            answerElements = [];
+            gameInProgress = true;
+            
+            // Mezclar las preguntas aleatoriamente
+            const shuffledQuestions = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Crear array de respuestas y mezclarlas
+            const answers = shuffledQuestions.map(q => q.correctAnswer);
+            const shuffledAnswers = [...answers].sort(() => Math.random() - 0.5);
+            
+            // Cargar respuestas en el panel izquierdo
+            loadAnswers(shuffledAnswers);
+            
+            // Cargar preguntas en el panel derecho
+            loadQuestions(shuffledQuestions);
+            
+            // Ocultar resultados y feedback
+            document.getElementById('results-summary').style.display = 'none';
+            document.getElementById('feedback-container').className = 'feedback-container';
+            document.getElementById('feedback-container').textContent = '';
+            
+            // Habilitar botón de verificar
+            document.getElementById('check-btn').disabled = false;
+        }
+
+        // Cargar respuestas en el panel izquierdo
+        function loadAnswers(answers) {
+            const answersList = document.getElementById('answers-list');
+            answersList.innerHTML = '';
+            
+            answers.forEach((answer, index) => {
+                const answerElement = document.createElement('div');
+                answerElement.className = 'answer-item';
+                answerElement.id = `answer-${index}`;
+                answerElement.textContent = answer;
+                answerElement.draggable = true;
+                answerElement.dataset.answer = answer;
+                
+                // Eventos de arrastrar
+                answerElement.addEventListener('dragstart', handleDragStart);
+                answerElement.addEventListener('dragend', handleDragEnd);
+                
+                answersList.appendChild(answerElement);
+                answerElements.push(answerElement);
+            });
+        }
+
+        // Cargar preguntas en el panel derecho
+        function loadQuestions(questions) {
+            const questionsList = document.getElementById('questions-list');
+            questionsList.innerHTML = '';
+            
+            questions.forEach((question, index) => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'question-item';
+                questionElement.id = `question-${index}`;
+                questionElement.dataset.questionId = question.id;
+                questionElement.dataset.correctAnswer = question.correctAnswer;
+                
+                questionElement.innerHTML = `
+                    <div class="question-text">
+                        <span class="question-number">${index + 1}</span>
+                        ${question.question}
+                    </div>
+                    <div class="answer-dropzone" id="dropzone-${index}" data-question-id="${question.id}">
+                        Arrastra aquí la respuesta
+                    </div>
+                `;
+                
+                // Eventos de soltar
+                const dropzone = questionElement.querySelector('.answer-dropzone');
+                dropzone.addEventListener('dragover', handleDragOver);
+                dropzone.addEventListener('dragleave', handleDragLeave);
+                dropzone.addEventListener('drop', handleDrop);
+                
+                questionsList.appendChild(questionElement);
+            });
+        }
+
+        // Manejar inicio de arrastre
+        function handleDragStart(e) {
+            if (!gameInProgress) {
+                e.preventDefault();
+                return;
+            }
+            
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.answer);
+            e.dataTransfer.setData('answer-id', this.id);
+        }
+
+        // Manejar fin de arrastre
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+        }
+
+        // Manejar cuando un elemento se arrastra sobre una zona de soltado
+        function handleDragOver(e) {
+            if (!gameInProgress) {
+                e.preventDefault();
+                return;
+            }
+            
+            e.preventDefault();
+            this.parentElement.classList.add('drag-over');
+        }
+
+        // Manejar cuando un elemento sale de una zona de soltado
+        function handleDragLeave() {
+            this.parentElement.classList.remove('drag-over');
+        }
+
+        // Manejar cuando se suelta un elemento
+        function handleDrop(e) {
+            if (!gameInProgress) return;
+            
+            e.preventDefault();
+            this.parentElement.classList.remove('drag-over');
+            
+            const answer = e.dataTransfer.getData('text/plain');
+            const answerId = e.dataTransfer.getData('answer-id');
+            const questionId = this.dataset.questionId;
+            
+            // Marcar la respuesta anterior como no usada si existía
+            const previousAnswerId = userAnswers[questionId];
+            if (previousAnswerId && answerId !== previousAnswerId) {
+                const previousAnswerElement = document.getElementById(previousAnswerId);
+                if (previousAnswerElement) {
+                    previousAnswerElement.classList.remove('used');
+                }
+            }
+            
+            // Marcar la respuesta actual como usada
+            const answerElement = document.getElementById(answerId);
+            if (answerElement) {
+                answerElement.classList.add('used');
+            }
+            
+            // Guardar la respuesta del usuario
+            userAnswers[questionId] = answerId;
+            
+            // Mostrar la respuesta en la zona de soltado
+            this.textContent = answer;
+            this.classList.add('has-answer');
+            this.classList.remove('correct', 'incorrect');
+        }
+
+        // Verificar todas las respuestas
+        function checkAnswers() {
+            if (!gameInProgress) return;
+            
+            let correctCount = 0;
+            const totalQuestions = gameData.length;
+            
+            // Verificar cada pregunta
+            gameData.forEach(question => {
+                const questionId = question.id;
+                const dropzone = document.querySelector(`.answer-dropzone[data-question-id="${questionId}"]`);
+                
+                if (dropzone && dropzone.classList.contains('has-answer')) {
+                    const userAnswer = dropzone.textContent;
+                    const isCorrect = userAnswer === question.correctAnswer;
+                    
+                    if (isCorrect) {
+                        dropzone.classList.remove('incorrect');
+                        dropzone.classList.add('correct');
+                        correctCount++;
+                    } else {
+                        dropzone.classList.remove('correct');
+                        dropzone.classList.add('incorrect');
+                    }
+                }
+            });
+            
+            // Calcular puntuación
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            
+            // Mostrar feedback
+            const feedbackContainer = document.getElementById('feedback-container');
+            if (correctCount === totalQuestions) {
+                feedbackContainer.textContent = `¡Excelente! Todas las respuestas son correctas (${correctCount}/${totalQuestions}).`;
+                feedbackContainer.className = 'feedback-container feedback-correct';
+                gameInProgress = false;
+                
+                // Mostrar resultados después de un breve retraso
+                setTimeout(() => {
+                    showFinalResults(correctCount, totalQuestions, percentage);
+                }, 1500);
+            } else {
+                feedbackContainer.textContent = `Has acertado ${correctCount} de ${totalQuestions} respuestas. Sigue intentándolo.`;
+                feedbackContainer.className = 'feedback-container feedback-incorrect';
+            }
+        }
+
+        // Mostrar resultados finales
+        function showFinalResults(correctCount, totalQuestions, percentage) {
+            // Ocultar juego y mostrar resultados
+            document.getElementById('results-summary').style.display = 'block';
+            
+            // Actualizar resultados
+            document.getElementById('final-percentage').textContent = `${percentage}%`;
+            document.getElementById('final-score').textContent = `${correctCount}/${totalQuestions}`;
+            
+            // Deshabilitar botón de verificar
+            document.getElementById('check-btn').disabled = true;
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar juego
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('check-btn').addEventListener('click', checkAnswers);
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('play-again-btn').addEventListener('click', initGame);
+        });
+    </script>
+</body>
+</html>

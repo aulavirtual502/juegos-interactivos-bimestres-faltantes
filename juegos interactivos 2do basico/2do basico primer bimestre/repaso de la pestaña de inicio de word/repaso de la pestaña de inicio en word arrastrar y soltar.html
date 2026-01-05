@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 Arrastrar y Soltar: Procesador de Texto</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #2c3e50, #8e44ad, #2c3e50);
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      opacity: 0.9;
+      font-size: 1rem;
+    }
+
+    .instructions {
+      padding: 15px 25px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .game-area {
+      padding: 25px;
+    }
+
+    .question-card {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border-left: 5px solid #3498db;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+    }
+
+    .sentence {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .blank {
+      display: inline-block;
+      min-width: 120px;
+      min-height: 40px;
+      padding: 8px 16px;
+      border: 2px dashed #95a5a6;
+      border-radius: 6px;
+      background: #ecf0f1;
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .blank.drag-over {
+      border-color: #3498db;
+      background: #d6eaf8;
+    }
+
+    .blank.correct {
+      background: #d4edda;
+      border-color: #28a745;
+      font-weight: bold;
+    }
+
+    .blank.incorrect {
+      background: #f8d7da;
+      border-color: #dc3545;
+    }
+
+    .blank .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 20px;
+      height: 20px;
+      background: #e74c3c;
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .blank:hover .remove-btn {
+      opacity: 1;
+    }
+
+    .options-container {
+      margin-top: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .option {
+      padding: 12px 20px;
+      background: #3498db;
+      color: white;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s;
+      font-weight: 500;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    }
+
+    .option:hover {
+      background: #2980b9;
+      transform: scale(1.03);
+    }
+
+    .option:active {
+      cursor: grabbing;
+      transform: scale(0.98);
+    }
+
+    .controls {
+      text-align: center;
+      padding: 20px;
+    }
+
+    button {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #219653;
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .results {
+      text-align: center;
+      padding: 30px;
+      display: none;
+    }
+
+    .score {
+      font-size: 2rem;
+      margin: 20px 0;
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .final-message {
+      font-size: 1.3rem;
+      margin-bottom: 25px;
+      color: #2c3e50;
+    }
+
+    @media (max-width: 600px) {
+      .option {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+      }
+      .blank {
+        min-width: 100px;
+        padding: 6px 10px;
+        font-size: 0.9rem;
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧩 Arrastra y Soltar</h1>
+      <p class="subtitle">Completa las frases con la respuesta correcta</p>
+    </header>
+
+    <div class="instructions">
+      📌 Arrastra una opción y suéltala en el espacio. Puedes cambiarla arrastrando otra encima.
+    </div>
+
+    <div class="game-area" id="gameArea">
+      <!-- Tarjetas aquí -->
+    </div>
+
+    <div class="controls">
+      <button id="checkBtn">✅ Verificar respuestas</button>
+    </div>
+
+    <div class="results" id="results">
+      <h2>🎉 ¡Juego completado!</h2>
+      <p class="final-message" id="finalMessage"></p>
+      <div class="score" id="score">0/10</div>
+      <button id="restartBtn">🔁 Jugar de nuevo</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        sentence: "La función principal del comando <strong>\"Copiar formato\"</strong> es ___",
+        correct: "Aplicar el mismo aspecto visual de un texto a otro.",
+        distractors: [
+          "Guardar el documento actual en un formato diferente.",
+          "Copiar una imagen y su posición exacta.",
+          "Duplicar un párrafo completo en otra ubicación."
+        ]
+      },
+      {
+        sentence: "Para escribir H₂O, el \"2\" debe aplicarse con ___",
+        correct: "Subíndice",
+        distractors: [
+          "Efectos de texto",
+          "Tachado",
+          "Superíndice"
+        ]
+      },
+      {
+        sentence: "Las opciones para alinear texto (izquierda, centro, etc.) están en el grupo ___",
+        correct: "Párrafo",
+        distractors: [
+          "Estilos",
+          "Portapapeles",
+          "Fuente"
+        ]
+      },
+      {
+        sentence: "Los <strong>\"Estilos\"</strong> predefinidos ayudan principalmente a ___",
+        correct: "Mantener una apariencia coherente y uniforme en el documento.",
+        distractors: [
+          "Corregir automáticamente los errores ortográficos.",
+          "Convertir el documento directamente a una presentación.",
+          "Insertar tablas y gráficos automáticamente."
+        ]
+      },
+      {
+        sentence: "Para cambiar todas las apariciones de una palabra por otra, se usan las herramientas de ___",
+        correct: "Buscar y Reemplazar",
+        distractors: [
+          "Seleccionar y Borrar",
+          "Cortar y Pegar",
+          "Copiar y Pegar"
+        ]
+      },
+      {
+        sentence: "El botón que muestra saltos de párrafo y espacios es ___",
+        correct: "Mostrar todo (símbolo ¶)",
+        distractors: [
+          "Viñetas",
+          "Interlineado",
+          "Bordes"
+        ]
+      },
+      {
+        sentence: "Para crear una estructura jerárquica (1., 1.1, a)), la herramienta ideal es ___",
+        correct: "Lista Multinivel",
+        distractors: [
+          "Función Ordenar",
+          "Numeración simple",
+          "Viñetas con símbolos"
+        ]
+      },
+      {
+        sentence: "El menú rápido con opciones como copiar/pegar se accede con ___",
+        correct: "El clic derecho del mouse.",
+        distractors: [
+          "La tecla \"Insert\".",
+          "Doble clic en la barra de título.",
+          "La pestaña \"Archivo\"."
+        ]
+      },
+      {
+        sentence: "El ajuste de la distancia entre el margen y el inicio del párrafo se llama ___",
+        correct: "Sangría",
+        distractors: [
+          "Espaciado anterior",
+          "Interlineado",
+          "Alineación"
+        ]
+      },
+      {
+        sentence: "Al pegar con <strong>\"Mantener solo texto\"</strong>, el resultado es ___",
+        correct: "Un pegado del contenido textual sin ningún formato adjunto.",
+        distractors: [
+          "Un pegado que conserva el formato original.",
+          "La inserción del texto como imagen no editable.",
+          "Un pegado donde el texto se adapta al formato del destino."
+        ]
+      }
+    ];
+
+    function shuffleArray(array) {
+      const a = [...array];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const gameArea = document.getElementById('gameArea');
+    const checkBtn = document.getElementById('checkBtn');
+    const resultsDiv = document.getElementById('results');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let draggedOption = null;
+
+    function renderGame() {
+      // Barajar preguntas
+      const shuffled = shuffleArray(questions);
+      
+      gameArea.innerHTML = '';
+      
+      shuffled.forEach((q, idx) => {
+        // Barajar opciones
+        const options = shuffleArray([q.correct, ...q.distractors]);
+        
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        
+        // ✅ Guardamos la respuesta correcta directamente en el blank
+        card.innerHTML = `
+          <div class="sentence">${q.sentence.replace('___', 
+            `<span class="blank" 
+                  data-correct="${encodeURIComponent(q.correct)}" 
+                  data-index="${idx}">?</span>`
+          )}</div>
+          <div class="options-container">
+            ${options.map(text => 
+              `<div class="option" draggable="true" data-text="${encodeURIComponent(text)}">${text}</div>`
+            ).join('')}
+          </div>
+        `;
+        
+        gameArea.appendChild(card);
+      });
+      
+      setupEvents();
+    }
+
+    function setupEvents() {
+      // Limpiar eventos anteriores
+      document.querySelectorAll('.option, .blank').forEach(el => {
+        el.removeEventListener('dragstart', onDragStart);
+        el.removeEventListener('dragend', onDragEnd);
+        el.removeEventListener('dragover', onDragOver);
+        el.removeEventListener('dragenter', onDragEnter);
+        el.removeEventListener('dragleave', onDragLeave);
+        el.removeEventListener('drop', onDrop);
+      });
+
+      document.querySelectorAll('.option').forEach(opt => {
+        opt.addEventListener('dragstart', onDragStart);
+        opt.addEventListener('dragend', onDragEnd);
+      });
+
+      document.querySelectorAll('.blank').forEach(blank => {
+        blank.addEventListener('dragover', onDragOver);
+        blank.addEventListener('dragenter', onDragEnter);
+        blank.addEventListener('dragleave', onDragLeave);
+        blank.addEventListener('drop', onDrop);
+      });
+
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.removeEventListener('click', onRemoveClick);
+        btn.addEventListener('click', onRemoveClick);
+      });
+    }
+
+    function onDragStart(e) {
+      draggedOption = {
+        element: this,
+        text: decodeURIComponent(this.dataset.text)
+      };
+      e.dataTransfer.effectAllowed = 'move';
+      this.style.opacity = '0.4';
+    }
+
+    function onDragEnd() {
+      this.style.opacity = '1';
+      draggedOption = null;
+    }
+
+    function onDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+
+    function onDragEnter(e) {
+      e.preventDefault();
+      this.classList.add('drag-over');
+    }
+
+    function onDragLeave() {
+      this.classList.remove('drag-over');
+    }
+
+    function onDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      if (!draggedOption) return;
+
+      const blank = this;
+      const newText = draggedOption.text;
+
+      // Devolver opción anterior si existe
+      const existingSpan = blank.querySelector('.placed-option');
+      if (existingSpan) {
+        const existingText = existingSpan.dataset.text;
+        const optsContainer = blank.closest('.question-card').querySelector('.options-container');
+        const newOpt = document.createElement('div');
+        newOpt.className = 'option';
+        newOpt.draggable = true;
+        newOpt.dataset.text = encodeURIComponent(existingText);
+        newOpt.textContent = existingText;
+        optsContainer.appendChild(newOpt);
+        existingSpan.remove();
+      }
+
+      // Colocar nueva
+      const placedSpan = document.createElement('span');
+      placedSpan.className = 'placed-option';
+      placedSpan.dataset.text = newText;
+      placedSpan.textContent = newText;
+
+      const removeBtn = document.createElement('span');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '×';
+      removeBtn.onclick = onRemoveClick;
+
+      placedSpan.appendChild(removeBtn);
+      blank.innerHTML = '';
+      blank.appendChild(placedSpan);
+
+      // Eliminar arrastrada
+      if (draggedOption.element.parentNode) {
+        draggedOption.element.remove();
+      }
+
+      draggedOption = null;
+      setupEvents();
+    }
+
+    function onRemoveClick(e) {
+      e.stopPropagation();
+      const blank = this.closest('.blank');
+      if (!blank) return;
+
+      const placedSpan = blank.querySelector('.placed-option');
+      if (placedSpan) {
+        const text = placedSpan.dataset.text;
+        const optsContainer = blank.closest('.question-card').querySelector('.options-container');
+        const newOpt = document.createElement('div');
+        newOpt.className = 'option';
+        newOpt.draggable = true;
+        newOpt.dataset.text = encodeURIComponent(text);
+        newOpt.textContent = text;
+        optsContainer.appendChild(newOpt);
+        placedSpan.remove();
+        blank.textContent = '?';
+        setupEvents();
+      }
+    }
+
+    function checkAnswers() {
+      let score = 0;
+      const blanks = document.querySelectorAll('.blank');
+
+      blanks.forEach(blank => {
+        const correctAnswer = decodeURIComponent(blank.dataset.correct);
+        const placedSpan = blank.querySelector('.placed-option');
+        const userAnswer = placedSpan ? placedSpan.dataset.text : null;
+
+        blank.classList.remove('correct', 'incorrect');
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+          score++;
+        } else {
+          blank.classList.add('incorrect');
+          blank.textContent = correctAnswer;
+        }
+      });
+
+      // Mostrar resultados
+      gameArea.style.display = 'none';
+      checkBtn.style.display = 'none';
+      resultsDiv.style.display = 'block';
+
+      document.getElementById('score').textContent = `${score}/10`;
+      
+      const msg = document.getElementById('finalMessage');
+      if (score === 10) {
+        msg.textContent = "¡Perfecto! 🌟 Dominas los procesadores de texto.";
+        msg.style.color = "#27ae60";
+      } else if (score >= 7) {
+        msg.textContent = "¡Muy bien! 🎯 Sólidos conocimientos.";
+        msg.style.color = "#2980b9";
+      } else if (score >= 4) {
+        msg.textContent = "Bien 👍, pero repasa algunos conceptos clave.";
+        msg.style.color = "#f39c12";
+      } else {
+        msg.textContent = "📚 Es momento de repasar los fundamentos.";
+        msg.style.color = "#e74c3c";
+      }
+    }
+
+    function restartGame() {
+      gameArea.style.display = 'block';
+      checkBtn.style.display = 'inline-block';
+      resultsDiv.style.display = 'none';
+      renderGame();
+    }
+
+    // Iniciar
+    renderGame();
+
+    checkBtn.addEventListener('click', checkAnswers);
+    restartBtn.addEventListener('click', restartGame);
+  </script>
+</body>
+</html>

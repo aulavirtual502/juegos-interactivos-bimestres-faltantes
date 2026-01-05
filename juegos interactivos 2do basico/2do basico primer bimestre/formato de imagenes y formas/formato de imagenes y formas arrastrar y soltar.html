@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Arrastrar: Formato de Imágenes y Formas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8A2BE2 0%, #4169E1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .game-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        @media (min-width: 992px) {
+            .game-container {
+                flex-wrap: nowrap;
+            }
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .panel h2 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .answers-panel h2 {
+            color: #4169E1;
+        }
+        
+        .questions-panel h2 {
+            color: #8A2BE2;
+        }
+        
+        .items-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 450px;
+        }
+        
+        .answer-item {
+            padding: 20px;
+            background-color: #f0f5ff;
+            border: 3px dashed #4169E1;
+            border-radius: 15px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4169E1;
+            text-align: center;
+            user-select: none;
+            touch-action: none;
+        }
+        
+        .answer-item:hover {
+            background-color: #e0e8ff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .answer-item:active {
+            cursor: grabbing;
+        }
+        
+        .answer-item.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .answer-item.used {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background-color: #f0f0f0;
+            border-style: solid;
+            border-color: #ccc;
+            color: #999;
+        }
+        
+        .question-item {
+            padding: 25px;
+            background-color: #f9fbff;
+            border-radius: 15px;
+            border-left: 6px solid #8A2BE2;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 140px;
+        }
+        
+        .question-item.correct {
+            background-color: #e8f7ef;
+            border-left-color: #2ecc71;
+        }
+        
+        .question-item.incorrect {
+            background-color: #fdeded;
+            border-left-color: #e74c3c;
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .drop-zone {
+            min-height: 60px;
+            border: 3px dashed #aaa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #777;
+            background-color: #fff;
+        }
+        
+        .drop-zone.active {
+            border-color: #4169E1;
+            background-color: #f0f5ff;
+            color: #4169E1;
+        }
+        
+        .drop-zone.correct {
+            border-color: #2ecc71;
+            background-color: #e8f7ef;
+            color: #155724;
+        }
+        
+        .drop-zone.incorrect {
+            border-color: #e74c3c;
+            background-color: #fdeded;
+            color: #721c24;
+        }
+        
+        .dropped-answer {
+            padding: 15px 20px;
+            background-color: #4169E1;
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .dropped-answer.correct {
+            background-color: #2ecc71;
+        }
+        
+        .dropped-answer.incorrect {
+            background-color: #e74c3c;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #check-btn {
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            color: white;
+        }
+        
+        #reset-btn {
+            background: linear-gradient(to right, #FF7F50, #FF6347);
+            color: white;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .score-board {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+        
+        .score-board h3 {
+            color: #4169E1;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 25px;
+            background-color: #f9fbff;
+            border-radius: 15px;
+            min-width: 120px;
+        }
+        
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #4169E1;
+        }
+        
+        .score-label {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        .results-summary {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            text-align: center;
+        }
+        
+        .results-summary h2 {
+            color: #4169E1;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8A2BE2, #4169E1);
+            color: white;
+            box-shadow: 0 10px 25px rgba(65, 105, 225, 0.3);
+        }
+        
+        .score-percentage {
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+        
+        .score-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .instructions h3 {
+            color: #4169E1;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 1.7;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .feedback.correct {
+            background-color: #e8f7ef;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: #fdeded;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .panel {
+                padding: 20px;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .answer-item {
+                font-size: 1.1rem;
+                padding: 15px;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .score-value {
+                font-size: 2rem;
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .score-percentage {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.9rem;
+            }
+            
+            .question-text {
+                font-size: 1.1rem;
+            }
+            
+            .answer-item {
+                font-size: 1rem;
+                padding: 12px;
+            }
+            
+            .score-container {
+                gap: 20px;
+            }
+            
+            .score-item {
+                min-width: 100px;
+                padding: 12px 15px;
+            }
+            
+            .score-value {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-arrows-alt"></i> Juego de Arrastrar: Formato de Imágenes</h1>
+            <p class="subtitle">Arrastra cada respuesta correcta desde el panel izquierdo hacia su pregunta correspondiente en el panel derecho.</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="game-container">
+                <div class="panel answers-panel">
+                    <h2><i class="fas fa-hand-point-up"></i> Respuestas</h2>
+                    <div class="items-container" id="answers-container">
+                        <!-- Las respuestas se cargarán aquí -->
+                    </div>
+                </div>
+                
+                <div class="panel questions-panel">
+                    <h2><i class="fas fa-question-circle"></i> Preguntas</h2>
+                    <div class="items-container" id="questions-container">
+                        <!-- Las preguntas se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="check-btn">
+                    <i class="fas fa-check-circle"></i> Verificar Respuestas
+                </button>
+                <button id="reset-btn">
+                    <i class="fas fa-redo-alt"></i> Reiniciar Juego
+                </button>
+            </div>
+            
+            <div class="score-board">
+                <h3><i class="fas fa-chart-line"></i> Progreso</h3>
+                <div class="score-container">
+                    <div class="score-item">
+                        <div class="score-value" id="correct-count">0</div>
+                        <div class="score-label">Correctas</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="total-count">10</div>
+                        <div class="score-label">Total</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="incorrect-count">0</div>
+                        <div class="score-label">Incorrectas</div>
+                    </div>
+                </div>
+                <div class="feedback" id="feedback">
+                    <!-- El feedback se mostrará aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+            <ol>
+                <li>Arrastra cada respuesta desde el panel izquierdo hacia la pregunta correspondiente en el panel derecho.</li>
+                <li>Suelta la respuesta sobre la zona de destino marcada con líneas punteadas.</li>
+                <li>Puedes arrastrar una respuesta de regreso al panel izquierdo si cambias de opinión.</li>
+                <li>Haz clic en "Verificar Respuestas" para comprobar tus respuestas.</li>
+                <li>Puedes reiniciar el juego en cualquier momento con el botón correspondiente.</li>
+                <li>Al completar todas las preguntas, verás tu puntuación final.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego: preguntas y respuestas correctas
+        const gameData = [
+            {
+                id: 1,
+                question: "¿Qué herramienta permite eliminar automáticamente el fondo de una imagen insertada?",
+                correctAnswer: "Quitar fondo"
+            },
+            {
+                id: 2,
+                question: "Para cambiar el grosor y el color del borde de una imagen, se utiliza la opción:",
+                correctAnswer: "Contorno de imagen"
+            },
+            {
+                id: 3,
+                question: "¿Cuál es la función principal de la herramienta 'Comprimir Imagen'?",
+                correctAnswer: "Reducir el tamaño del archivo del documento."
+            },
+            {
+                id: 4,
+                question: "Si quieres que tu imagen parezca un dibujo hecho con lápiz o una pintura, ¿qué opción debes usar?",
+                correctAnswer: "Efectos artísticos"
+            },
+            {
+                id: 5,
+                question: "¿Qué opción te permite controlar cómo se distribuye el texto alrededor de una imagen (por ejemplo, 'Cuadrado' o 'Detrás del texto')?",
+                correctAnswer: "Ajustar Texto"
+            },
+            {
+                id: 6,
+                question: "Para cambiar una forma insertada por otra diferente (por ejemplo, de un rectángulo a una estrella), se debe usar:",
+                correctAnswer: "Editar forma"
+            },
+            {
+                id: 7,
+                question: "Si has insertado varias formas (como flechas y cuadros) y quieres moverlas todas juntas sin desalinearlas, la herramienta clave es:",
+                correctAnswer: "Agrupar"
+            },
+            {
+                id: 8,
+                question: "¿Qué herramienta se utiliza específicamente para eliminar partes no deseadas de los bordes de una imagen?",
+                correctAnswer: "Recortar"
+            },
+            {
+                id: 9,
+                question: "Para aplicar un color degradado o una textura al interior de una forma, debes modificar su:",
+                correctAnswer: "Relleno de Forma"
+            },
+            {
+                id: 10,
+                question: "¿Qué opción permite cambiar el orden de superposición entre formas, haciendo que una aparezca por encima de otra?",
+                correctAnswer: "Enviar al Fondo / Traer al Frente"
+            }
+        ];
+
+        // Variables globales del juego
+        let draggedAnswer = null;
+        let questions = [];
+        let answers = [];
+        let userAnswers = {};
+        let gameCompleted = false;
+
+        // Inicializar el juego
+        function initGame() {
+            // Mezclar las preguntas aleatoriamente
+            questions = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Crear array de respuestas y mezclarlas
+            answers = questions.map(q => q.correctAnswer);
+            answers = answers.sort(() => Math.random() - 0.5);
+            
+            // Reiniciar variables
+            draggedAnswer = null;
+            userAnswers = {};
+            gameCompleted = false;
+            
+            // Actualizar la interfaz
+            loadQuestions();
+            loadAnswers();
+            updateScore();
+            
+            // Ocultar feedback
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('feedback').className = 'feedback';
+            
+            // Restaurar botones
+            document.getElementById('check-btn').disabled = false;
+        }
+
+        // Cargar las preguntas en el panel derecho
+        function loadQuestions() {
+            const questionsContainer = document.getElementById('questions-container');
+            questionsContainer.innerHTML = '';
+            
+            questions.forEach((question) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+                questionItem.dataset.id = question.id;
+                
+                questionItem.innerHTML = `
+                    <div class="question-text">${question.question}</div>
+                    <div class="drop-zone" id="drop-${question.id}" data-question-id="${question.id}">
+                        Arrastra aquí la respuesta correcta
+                    </div>
+                `;
+                
+                questionsContainer.appendChild(questionItem);
+                
+                // Configurar eventos de arrastre para la zona de destino
+                const dropZone = document.getElementById(`drop-${question.id}`);
+                
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (!dropZone.classList.contains('correct') && !dropZone.classList.contains('incorrect')) {
+                        dropZone.classList.add('active');
+                    }
+                });
+                
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('active');
+                });
+                
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('active');
+                    
+                    if (draggedAnswer && !gameCompleted) {
+                        const answerText = draggedAnswer.textContent;
+                        const questionId = parseInt(dropZone.dataset.questionId);
+                        
+                        // Verificar si ya hay una respuesta en esta pregunta
+                        const existingAnswer = userAnswers[questionId];
+                        if (existingAnswer) {
+                            // Devolver la respuesta anterior al panel de respuestas
+                            returnAnswerToPanel(existingAnswer);
+                        }
+                        
+                        // Marcar la respuesta como usada
+                        draggedAnswer.classList.add('used');
+                        
+                        // Guardar la respuesta del usuario
+                        userAnswers[questionId] = answerText;
+                        
+                        // Mostrar la respuesta en la zona de destino
+                        dropZone.innerHTML = `<div class="dropped-answer">${answerText}</div>`;
+                        dropZone.classList.remove('active');
+                        
+                        // Limpiar la referencia de arrastre
+                        draggedAnswer = null;
+                    }
+                });
+            });
+        }
+
+        // Cargar las respuestas en el panel izquierdo
+        function loadAnswers() {
+            const answersContainer = document.getElementById('answers-container');
+            answersContainer.innerHTML = '';
+            
+            answers.forEach((answer, index) => {
+                const answerItem = document.createElement('div');
+                answerItem.className = 'answer-item';
+                answerItem.textContent = answer;
+                answerItem.draggable = true;
+                answerItem.id = `answer-${index}`;
+                
+                // Configurar eventos de arrastre
+                answerItem.addEventListener('dragstart', (e) => {
+                    if (!answerItem.classList.contains('used') && !gameCompleted) {
+                        draggedAnswer = answerItem;
+                        answerItem.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', answer);
+                    } else {
+                        e.preventDefault();
+                    }
+                });
+                
+                answerItem.addEventListener('dragend', () => {
+                    answerItem.classList.remove('dragging');
+                });
+                
+                // Permitir devolver respuestas al panel de respuestas
+                answerItem.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                
+                answerItem.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    // Si se suelta una respuesta en el panel de respuestas, se devuelve
+                    if (draggedAnswer && draggedAnswer.classList.contains('used')) {
+                        returnAnswerToPanel(draggedAnswer.textContent);
+                    }
+                });
+                
+                answersContainer.appendChild(answerItem);
+            });
+        }
+
+        // Devolver una respuesta al panel de respuestas
+        function returnAnswerToPanel(answerText) {
+            // Buscar la respuesta en el panel de respuestas
+            const answerItems = document.querySelectorAll('.answer-item');
+            for (const answerItem of answerItems) {
+                if (answerItem.textContent === answerText && answerItem.classList.contains('used')) {
+                    answerItem.classList.remove('used');
+                    
+                    // Buscar y eliminar la respuesta de las respuestas del usuario
+                    for (const questionId in userAnswers) {
+                        if (userAnswers[questionId] === answerText) {
+                            delete userAnswers[questionId];
+                            
+                            // Restaurar la zona de destino
+                            const dropZone = document.getElementById(`drop-${questionId}`);
+                            if (dropZone) {
+                                dropZone.innerHTML = 'Arrastra aquí la respuesta correcta';
+                                dropZone.className = 'drop-zone';
+                                
+                                // Restaurar el estilo de la pregunta
+                                const questionItem = dropZone.closest('.question-item');
+                                if (questionItem) {
+                                    questionItem.classList.remove('correct', 'incorrect');
+                                }
+                            }
+                            
+                            break;
+                        }
+                    }
+                    
+                    break;
+                }
+            }
+        }
+
+        // Actualizar el marcador
+        function updateScore() {
+            const correctCount = calculateCorrectAnswers();
+            const totalQuestions = gameData.length;
+            const answeredQuestions = Object.keys(userAnswers).length;
+            const incorrectCount = answeredQuestions - correctCount;
+            
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('incorrect-count').textContent = incorrectCount;
+            document.getElementById('total-count').textContent = totalQuestions;
+        }
+
+        // Calcular respuestas correctas
+        function calculateCorrectAnswers() {
+            let correctCount = 0;
+            
+            for (const questionId in userAnswers) {
+                const question = gameData.find(q => q.id === parseInt(questionId));
+                if (question && userAnswers[questionId] === question.correctAnswer) {
+                    correctCount++;
+                }
+            }
+            
+            return correctCount;
+        }
+
+        // Verificar todas las respuestas
+        function checkAnswers() {
+            // Verificar que todas las preguntas tengan respuesta
+            const totalQuestions = gameData.length;
+            const answeredQuestions = Object.keys(userAnswers).length;
+            
+            if (answeredQuestions < totalQuestions) {
+                showFeedback(`Tienes ${totalQuestions - answeredQuestions} preguntas sin responder. Por favor, responde todas las preguntas antes de verificar.`, 'incorrect');
+                return;
+            }
+            
+            let correctCount = 0;
+            
+            questions.forEach(question => {
+                const questionId = question.id;
+                const userAnswer = userAnswers[questionId];
+                const dropZone = document.getElementById(`drop-${questionId}`);
+                const questionItem = dropZone.closest('.question-item');
+                const droppedAnswer = dropZone.querySelector('.dropped-answer');
+                
+                // Verificar si la respuesta es correcta
+                if (userAnswer === question.correctAnswer) {
+                    correctCount++;
+                    dropZone.classList.add('correct');
+                    questionItem.classList.add('correct');
+                    if (droppedAnswer) {
+                        droppedAnswer.classList.remove('incorrect');
+                        droppedAnswer.classList.add('correct');
+                    }
+                } else {
+                    dropZone.classList.add('incorrect');
+                    questionItem.classList.add('incorrect');
+                    if (droppedAnswer) {
+                        droppedAnswer.classList.remove('correct');
+                        droppedAnswer.classList.add('incorrect');
+                    }
+                }
+            });
+            
+            gameCompleted = true;
+            document.getElementById('check-btn').disabled = true;
+            
+            // Mostrar resultados
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            const scoreText = `${correctCount}/${totalQuestions}`;
+            
+            if (correctCount === totalQuestions) {
+                showFeedback(`¡Perfecto! Has acertado todas las respuestas: ${scoreText} (${percentage}%)`, 'correct');
+            } else if (correctCount >= totalQuestions / 2) {
+                showFeedback(`¡Bien hecho! Has acertado ${scoreText} (${percentage}%)`, 'correct');
+            } else {
+                showFeedback(`Puedes mejorar. Has acertado ${scoreText} (${percentage}%)`, 'incorrect');
+            }
+        }
+
+        // Mostrar feedback
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = `feedback ${type}`;
+            feedback.style.display = 'block';
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar juego
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('check-btn').addEventListener('click', checkAnswers);
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            
+            // Permitir arrastrar elementos en toda la página
+            document.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('drop', (e) => {
+                e.preventDefault();
+                // Si se suelta una respuesta en cualquier lugar, se devuelve al panel
+                if (draggedAnswer && draggedAnswer.classList.contains('used')) {
+                    returnAnswerToPanel(draggedAnswer.textContent);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

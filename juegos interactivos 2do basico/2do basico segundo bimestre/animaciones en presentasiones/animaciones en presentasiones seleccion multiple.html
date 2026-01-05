@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Animaciones en Presentaciones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, #1a2a6c, #3a7bd5);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        
+        .score-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .score-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .score {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .progress-container {
+            background-color: #f0f0f0;
+            height: 8px;
+            width: 100%;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .question-container {
+            padding: 30px;
+        }
+        
+        .question-number {
+            color: #3a7bd5;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .question-text {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .option:hover {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .option-letter {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 35px;
+            height: 35px;
+            background-color: #3a7bd5;
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 600;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .next-btn {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .next-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .next-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .next-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .reset-btn {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-container {
+            padding: 40px;
+            text-align: center;
+            display: none;
+        }
+        
+        .result-title {
+            font-size: 2.5rem;
+            color: #1a2a6c;
+            margin-bottom: 20px;
+        }
+        
+        .result-score {
+            font-size: 5rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #1a2a6c, #3a7bd5);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 20px 0;
+        }
+        
+        .result-message {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .result-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .new-game-btn {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .new-game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .shuffle-notice {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e7f3ff;
+            border-radius: 8px;
+            color: #1a73e8;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shuffleAnimation {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-5deg) scale(1.1); }
+            50% { transform: rotate(5deg) scale(1.05); }
+            75% { transform: rotate(-3deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        
+        .shuffling {
+            animation: shuffleAnimation 0.6s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .question-container {
+                padding: 20px;
+            }
+            
+            .question-text {
+                font-size: 1.2rem;
+            }
+            
+            .option {
+                padding: 15px;
+                font-size: 1rem;
+            }
+            
+            .score-container {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 15px auto;
+                width: 80px;
+                height: 80px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .result-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .question-text {
+                font-size: 1.1rem;
+            }
+            
+            .option-letter {
+                width: 30px;
+                height: 30px;
+                margin-right: 10px;
+            }
+            
+            .next-btn, .restart-btn, .new-game-btn {
+                padding: 12px 30px;
+                font-size: 1.1rem;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .reset-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quiz de Animaciones</h1>
+            <p class="subtitle">Pon a prueba tus conocimientos sobre animaciones en presentaciones</p>
+            
+            <div class="controls">
+                <button class="control-btn" id="shuffleBtn">
+                    <i class="fas fa-random"></i> Mezclar Preguntas
+                </button>
+                <button class="control-btn" id="restartGameBtn">
+                    <i class="fas fa-redo"></i> Reiniciar Juego
+                </button>
+            </div>
+            
+            <div class="score-container">
+                <div class="score-label">PUNTUACIÓN</div>
+                <div class="score" id="score">0</div>
+            </div>
+        </header>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="question-container" id="questionContainer">
+            <div class="question-number" id="questionNumber">Pregunta 1 de 10</div>
+            <div class="question-text" id="questionText">Cargando pregunta...</div>
+            
+            <div class="options-container" id="optionsContainer">
+                <!-- Las opciones se cargarán aquí dinámicamente -->
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="shuffle-notice" id="shuffleNotice">
+                <i class="fas fa-random"></i> Las preguntas han sido mezcladas para un nuevo desafío.
+            </div>
+            
+            <div class="buttons-container">
+                <button class="reset-btn" id="resetBtn">
+                    <i class="fas fa-sync-alt"></i> Reiniciar Pregunta Actual
+                </button>
+                <button class="next-btn" id="nextBtn" disabled>Siguiente Pregunta</button>
+            </div>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <h2 class="result-title">¡Quiz Completado!</h2>
+            <div class="result-score" id="finalScore">0/10</div>
+            <p class="result-message" id="resultMessage"></p>
+            <div class="result-buttons">
+                <button class="restart-btn" id="restartBtn">
+                    <i class="fas fa-redo"></i> Jugar de Nuevo
+                </button>
+                <button class="new-game-btn" id="newGameBtn">
+                    <i class="fas fa-random"></i> Nuevo Juego Mezclado
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Desarrollado para probar conocimientos sobre animaciones en presentaciones</p>
+            <p><i class="fas fa-info-circle"></i> Las preguntas se mezclan al reiniciar para mayor desafío</p>
+        </div>
+    </div>
+
+    <script>
+        // Preguntas originales
+        const originalQuestions = [
+            {
+                question: "¿Qué atajo de teclado se utiliza para crear rápidamente una nueva diapositiva?",
+                options: ["Ctrl + N", "Ctrl + M", "Ctrl + D", "Ctrl + T"],
+                correctAnswer: 1
+            },
+            {
+                question: "Si deseas agregar una segunda animación a un objeto sin reemplazar la primera, ¿qué botón debes usar?",
+                options: ["Cambiar animación", "Agregar animación", "Efectos de animación", "Duplicar animación"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Cuál de las siguientes NO es una opción de inicio para una animación?",
+                options: ["Al hacer clic", "Con la anterior", "Después de la anterior", "Al finalizar la diapositiva"],
+                correctAnswer: 3
+            },
+            {
+                question: "Para modificar la dirección y la distancia de una trayectoria de movimiento, ¿qué elementos debemos ajustar?",
+                options: ["Los puntos de inicio y fin de la diapositiva", "Los puntos rojos y verdes del recorrido", "Las flechas de dirección en la barra de herramientas", "Los controles de duración y retraso"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué panel se utiliza para reorganizar el orden de las animaciones arrastrándolas hacia arriba o hacia abajo?",
+                options: ["Panel de selección", "Panel de tareas", "Panel de animación", "Panel de control"],
+                correctAnswer: 2
+            },
+            {
+                question: "Si deseas que una animación comience con un pequeño intervalo de tiempo después de la anterior, ¿qué control debes ajustar?",
+                options: ["Duración", "Retraso", "Velocidad", "Trayectoria"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué herramienta se utiliza para hacer que un objeto siga un camino específico, como una línea curva o un círculo?",
+                options: ["Animaciones de énfasis", "Transiciones", "Trayectorias de movimiento", "Efectos de salida"],
+                correctAnswer: 2
+            },
+            {
+                question: "Para eliminar una animación aplicada a un objeto, ¿qué opción podemos seleccionar en el Panel de animación?",
+                options: ["Pausar animación", "Clic derecho sobre la animación y elegir 'Quitar'", "Desactivar efectos", "Restablecer diapositiva"],
+                correctAnswer: 1
+            },
+            {
+                question: "¿Qué tipos de efectos se pueden combinar en un solo objeto?",
+                options: ["Solo de entrada", "Solo de énfasis y salida", "De entrada, énfasis y salida", "Solo de trayectoria y salida"],
+                correctAnswer: 2
+            },
+            {
+                question: "¿Cuál es una consideración importante al usar múltiples animaciones en una presentación?",
+                options: ["Usar la mayor cantidad posible para hacerla más atractiva", "No abusar de ellas, ya que pueden distraer y restar profesionalismo", "Asegurarse de que todas comiencen 'Al hacer clic'", "Usar solo animaciones de trayectoria"],
+                correctAnswer: 1
+            }
+        ];
+
+        // Variables del juego
+        let questions = [...originalQuestions];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let gameCompleted = false;
+        let isShuffled = false;
+
+        // Elementos del DOM
+        const questionNumberElement = document.getElementById('questionNumber');
+        const questionTextElement = document.getElementById('questionText');
+        const optionsContainerElement = document.getElementById('optionsContainer');
+        const feedbackElement = document.getElementById('feedback');
+        const nextBtnElement = document.getElementById('nextBtn');
+        const resetBtnElement = document.getElementById('resetBtn');
+        const resultContainerElement = document.getElementById('resultContainer');
+        const questionContainerElement = document.getElementById('questionContainer');
+        const scoreElement = document.getElementById('score');
+        const progressBarElement = document.getElementById('progressBar');
+        const finalScoreElement = document.getElementById('finalScore');
+        const resultMessageElement = document.getElementById('resultMessage');
+        const restartBtnElement = document.getElementById('restartBtn');
+        const newGameBtnElement = document.getElementById('newGameBtn');
+        const shuffleBtnElement = document.getElementById('shuffleBtn');
+        const restartGameBtnElement = document.getElementById('restartGameBtn');
+        const shuffleNoticeElement = document.getElementById('shuffleNotice');
+
+        // Función para mezclar preguntas (algoritmo de Fisher-Yates)
+        function shuffleQuestions() {
+            // Crear una copia de las preguntas originales
+            let shuffledQuestions = [...originalQuestions];
+            
+            // Aplicar algoritmo de Fisher-Yates para mezclar
+            for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+            }
+            
+            return shuffledQuestions;
+        }
+
+        // Función para mezclar las preguntas y reiniciar el juego
+        function shuffleAndRestart() {
+            // Aplicar animación de mezcla
+            questionContainerElement.classList.add('shuffling');
+            
+            setTimeout(() => {
+                // Mezclar preguntas
+                questions = shuffleQuestions();
+                isShuffled = true;
+                
+                // Reiniciar juego
+                currentQuestionIndex = 0;
+                score = 0;
+                userAnswers = [];
+                gameCompleted = false;
+                
+                updateScore();
+                showQuestion();
+                
+                // Mostrar contenedor de pregunta y ocultar resultados
+                questionContainerElement.style.display = 'block';
+                resultContainerElement.style.display = 'none';
+                
+                // Actualizar barra de progreso
+                updateProgressBar();
+                
+                // Mostrar notificación de mezcla
+                shuffleNoticeElement.style.display = 'block';
+                
+                // Quitar animación después de completar
+                setTimeout(() => {
+                    questionContainerElement.classList.remove('shuffling');
+                }, 100);
+                
+                // Ocultar notificación después de 3 segundos
+                setTimeout(() => {
+                    shuffleNoticeElement.style.display = 'none';
+                }, 3000);
+            }, 300);
+        }
+
+        // Función para reiniciar el juego sin mezclar
+        function restartGame() {
+            // Restaurar preguntas originales
+            questions = [...originalQuestions];
+            isShuffled = false;
+            
+            // Reiniciar juego
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            gameCompleted = false;
+            
+            updateScore();
+            showQuestion();
+            
+            // Mostrar contenedor de pregunta y ocultar resultados
+            questionContainerElement.style.display = 'block';
+            resultContainerElement.style.display = 'none';
+            
+            // Actualizar barra de progreso
+            updateProgressBar();
+            
+            // Ocultar notificación de mezcla
+            shuffleNoticeElement.style.display = 'none';
+        }
+
+        // Inicializar el juego
+        function initGame() {
+            restartGame();
+        }
+
+        // Mostrar la pregunta actual
+        function showQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            // Actualizar número de pregunta
+            questionNumberElement.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            
+            // Actualizar texto de pregunta
+            questionTextElement.textContent = currentQuestion.question;
+            
+            // Actualizar opciones
+            optionsContainerElement.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.setAttribute('data-index', index);
+                
+                const optionLetter = document.createElement('span');
+                optionLetter.className = 'option-letter';
+                optionLetter.textContent = String.fromCharCode(65 + index); // A, B, C, D
+                
+                const optionText = document.createElement('span');
+                optionText.className = 'option-text';
+                optionText.textContent = option;
+                
+                optionElement.appendChild(optionLetter);
+                optionElement.appendChild(optionText);
+                
+                // Agregar evento de clic
+                optionElement.addEventListener('click', () => selectOption(index));
+                
+                optionsContainerElement.appendChild(optionElement);
+            });
+            
+            // Ocultar retroalimentación
+            feedbackElement.style.display = 'none';
+            feedbackElement.className = 'feedback';
+            
+            // Configurar botón de siguiente
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtnElement.textContent = 'Ver Resultados';
+            } else {
+                nextBtnElement.textContent = 'Siguiente Pregunta';
+            }
+            
+            // Deshabilitar botón de siguiente hasta que se seleccione una opción
+            nextBtnElement.disabled = true;
+            
+            // Habilitar botón de reinicio si ya se respondió esta pregunta
+            if (userAnswers[currentQuestionIndex] !== undefined) {
+                enableResetButton();
+            } else {
+                disableResetButton();
+            }
+        }
+
+        // Manejar selección de opción
+        function selectOption(selectedIndex) {
+            // Si el juego ya está completado, no hacer nada
+            if (gameCompleted) return;
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            // Guardar respuesta del usuario
+            userAnswers[currentQuestionIndex] = selectedIndex;
+            
+            // Deshabilitar todas las opciones
+            options.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Marcar la opción seleccionada como correcta o incorrecta
+            if (selectedIndex === currentQuestion.correctAnswer) {
+                options[selectedIndex].classList.add('correct');
+                score++;
+                updateScore();
+                
+                // Mostrar retroalimentación positiva
+                feedbackElement.textContent = "¡Correcto! Has acertado la respuesta.";
+                feedbackElement.classList.add('correct');
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[currentQuestion.correctAnswer].classList.add('correct');
+                
+                // Mostrar retroalimentación con la respuesta correcta
+                const correctAnswerLetter = String.fromCharCode(65 + currentQuestion.correctAnswer);
+                feedbackElement.textContent = `Incorrecto. La respuesta correcta es ${correctAnswerLetter}: ${currentQuestion.options[currentQuestion.correctAnswer]}`;
+                feedbackElement.classList.add('incorrect');
+            }
+            
+            // Mostrar retroalimentación
+            feedbackElement.style.display = 'block';
+            
+            // Habilitar botón de siguiente
+            nextBtnElement.disabled = false;
+            
+            // Habilitar botón de reinicio
+            enableResetButton();
+        }
+
+        // Función para reiniciar la pregunta actual
+        function resetCurrentQuestion() {
+            // Solo se puede reiniciar si ya se respondió esta pregunta
+            if (userAnswers[currentQuestionIndex] === undefined) return;
+            
+            // Restablecer respuesta del usuario para esta pregunta
+            userAnswers[currentQuestionIndex] = undefined;
+            
+            // Restablecer puntuación si la respuesta era correcta
+            const currentQuestion = questions[currentQuestionIndex];
+            if (score > 0 && userAnswers[currentQuestionIndex] !== undefined && 
+                userAnswers[currentQuestionIndex] === currentQuestion.correctAnswer) {
+                score--;
+                updateScore();
+            }
+            
+            // Mostrar la pregunta nuevamente con opciones activas
+            showQuestion();
+            
+            // Deshabilitar botón de reinicio hasta que se seleccione una opción
+            disableResetButton();
+        }
+
+        // Habilitar botón de reinicio
+        function enableResetButton() {
+            resetBtnElement.disabled = false;
+            resetBtnElement.style.opacity = '1';
+            resetBtnElement.style.cursor = 'pointer';
+        }
+
+        // Deshabilitar botón de reinicio
+        function disableResetButton() {
+            resetBtnElement.disabled = true;
+            resetBtnElement.style.opacity = '0.7';
+            resetBtnElement.style.cursor = 'not-allowed';
+        }
+
+        // Avanzar a la siguiente pregunta o mostrar resultados
+        function nextQuestion() {
+            // Si no se ha seleccionado una opción, no hacer nada
+            if (userAnswers[currentQuestionIndex] === undefined) return;
+            
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+                updateProgressBar();
+            } else {
+                showResults();
+            }
+        }
+
+        // Mostrar resultados finales
+        function showResults() {
+            gameCompleted = true;
+            
+            // Calcular porcentaje de aciertos
+            const percentage = Math.round((score / questions.length) * 100);
+            
+            // Mostrar puntuación final
+            finalScoreElement.textContent = `${score}/${questions.length}`;
+            
+            // Mostrar mensaje personalizado según la puntuación
+            let message = "";
+            if (percentage >= 90) {
+                message = "¡Excelente! Eres un experto en animaciones para presentaciones. Dominas completamente el tema.";
+            } else if (percentage >= 70) {
+                message = "¡Muy bien! Tienes buenos conocimientos sobre animaciones para presentaciones, pero aún hay detalles que mejorar.";
+            } else if (percentage >= 50) {
+                message = "¡Bien hecho! Tienes conocimientos básicos sobre animaciones para presentaciones. Sigue practicando para mejorar.";
+            } else {
+                message = "¡Sigue practicando! Las animaciones en presentaciones requieren más estudio. Revisa los conceptos y vuelve a intentarlo.";
+            }
+            
+            // Añadir información sobre el modo de juego
+            if (isShuffled) {
+                message += " ¡Y lo has hecho con las preguntas mezcladas!";
+            }
+            
+            resultMessageElement.textContent = message;
+            
+            // Ocultar contenedor de pregunta y mostrar resultados
+            questionContainerElement.style.display = 'none';
+            resultContainerElement.style.display = 'block';
+        }
+
+        // Actualizar puntuación en pantalla
+        function updateScore() {
+            scoreElement.textContent = score;
+        }
+
+        // Actualizar barra de progreso
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBarElement.style.width = `${progress}%`;
+        }
+
+        // Event listeners
+        nextBtnElement.addEventListener('click', nextQuestion);
+        resetBtnElement.addEventListener('click', resetCurrentQuestion);
+        restartBtnElement.addEventListener('click', restartGame);
+        newGameBtnElement.addEventListener('click', shuffleAndRestart);
+        shuffleBtnElement.addEventListener('click', shuffleAndRestart);
+        restartGameBtnElement.addEventListener('click', restartGame);
+
+        // Inicializar el juego al cargar la página
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

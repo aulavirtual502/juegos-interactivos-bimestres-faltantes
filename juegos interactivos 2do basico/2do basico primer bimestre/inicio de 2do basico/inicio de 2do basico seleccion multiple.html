@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Formato de Texto y Herramientas</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #3a7bd5);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .score-container, .question-counter {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .score {
+            color: #27ae60;
+            font-size: 1.5rem;
+        }
+        
+        .question-number {
+            color: #3498db;
+            font-size: 1.5rem;
+        }
+        
+        .question-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #3498db;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .option {
+            padding: 15px 20px;
+            background-color: white;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .option:hover {
+            background-color: #f1f8ff;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.08);
+        }
+        
+        .option.selected {
+            border-color: #3498db;
+            background-color: #e1f0fa;
+        }
+        
+        .option.correct {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+        }
+        
+        .option.incorrect {
+            border-color: #e74c3c;
+            background-color: #fadbd8;
+        }
+        
+        .option-letter {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .option.correct .option-letter {
+            background-color: #27ae60;
+        }
+        
+        .option.incorrect .option-letter {
+            background-color: #e74c3c;
+        }
+        
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            font-weight: bold;
+            animation: fadeIn 0.5s;
+        }
+        
+        .feedback.correct {
+            background-color: #d5f4e6;
+            color: #155724;
+            border-left: 5px solid #27ae60;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: #fadbd8;
+            color: #721c24;
+            border-left: 5px solid #e74c3c;
+            display: block;
+        }
+        
+        .feedback-info {
+            font-weight: normal;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-next {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-next:hover {
+            background: linear-gradient(90deg, #2980b9, #1c5a7a);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-next:disabled {
+            background: linear-gradient(90deg, #bdc3c7, #95a5a6);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-restart {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .btn-restart:hover {
+            background: linear-gradient(90deg, #27ae60, #219653);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .results-container {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        
+        .results-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .final-score {
+            font-size: 5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 20px 0;
+        }
+        
+        .results-message {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .shuffle-notice {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-left: 4px solid #ffc107;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .shuffle-notice.show {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shuffleAnimation {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .shuffling {
+            animation: shuffleAnimation 0.5s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Formato de Texto y Herramientas</h1>
+            <p class="subtitle">Demuestra tus conocimientos sobre herramientas de formato de texto</p>
+            <div class="shuffle-notice" id="shuffle-notice">
+                ¡Las preguntas han sido revueltas aleatoriamente!
+            </div>
+        </header>
+        
+        <div class="game-info">
+            <div class="score-container">
+                Puntaje: <span class="score">0</span>/10
+            </div>
+            <div class="question-counter">
+                Pregunta: <span class="question-number">1</span>/10
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+        
+        <div id="game-area">
+            <!-- El contenido del juego se cargará aquí dinámicamente -->
+        </div>
+        
+        <div class="buttons-container">
+            <button id="restart-btn" class="btn btn-restart">
+                <span>↻</span> Reiniciar Juego
+            </button>
+            <button id="next-btn" class="btn btn-next" disabled>
+                Siguiente <span>→</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Preguntas base del juego (orden original)
+        const originalQuestions = [
+            {
+                question: "Para aplicar un color con degradado a un texto, ¿en qué opción del menú 'Color de fuente' debemos hacer clic para acceder a la personalización avanzada?",
+                options: [
+                    "Colores estándar",
+                    "Tema",
+                    "Degradado > Más degradados…",
+                    "Relleno de texto"
+                ],
+                correctAnswer: 2,
+                explanation: "La opción correcta es 'Degradado > Más degradados…' que abre la ventana de personalización avanzada de degradados para texto."
+            },
+            {
+                question: "Al crear una viñeta personalizada, ¿cuál de las siguientes NO es una opción disponible en la ventana 'Definir nueva viñeta'?",
+                options: [
+                    "Símbolo",
+                    "Imagen",
+                    "Fuente",
+                    "Efecto 3D"
+                ],
+                correctAnswer: 3,
+                explanation: "'Efecto 3D' no es una opción disponible en la ventana 'Definir nueva viñeta'. Las opciones típicas son Símbolo, Imagen y Fuente."
+            },
+            {
+                question: "Si queremos ajustar con precisión el espacio que hay ANTES de un párrafo y el espacio ENTRE las líneas de texto, debemos usar:",
+                options: [
+                    "El botón rápido de 'Interlineado 1.5'",
+                    "La opción 'Opciones de interlineado…'",
+                    "El botón 'Alinear texto'",
+                    "El comando 'Copiar formato'"
+                ],
+                correctAnswer: 1,
+                explanation: "La opción 'Opciones de interlineado…' abre un cuadro de diálogo que permite ajustar con precisión el interlineado y los espacios antes/después del párrafo."
+            },
+            {
+                question: "En la herramienta de 'Sombreado', si queremos crear un color específico ajustando valores como el tono o el RGB, debemos elegir la pestaña:",
+                options: [
+                    "Estándar",
+                    "Tema",
+                    "Personalizado",
+                    "Degradado"
+                ],
+                correctAnswer: 2,
+                explanation: "La pestaña 'Personalizado' permite crear colores específicos ajustando valores como el tono, saturación, luminosidad o los componentes RGB."
+            },
+            {
+                question: "¿Qué herramienta específica se utiliza para insertar rápidamente una línea divisoria a lo ancho de la página?",
+                options: [
+                    "Bordes y sombreado",
+                    "Ver cuadrícula",
+                    "Línea horizontal",
+                    "Formato de línea horizontal"
+                ],
+                correctAnswer: 2,
+                explanation: "La herramienta 'Línea horizontal' inserta rápidamente una línea divisoria a lo ancho de la página con un solo clic."
+            },
+            {
+                question: "Para ver las líneas de división de las celdas en una tabla que no tiene bordes visibles, debemos activar la opción:",
+                options: [
+                    "Ver cuadrícula",
+                    "Bordes y sombreado",
+                    "Línea horizontal",
+                    "Formato de tabla"
+                ],
+                correctAnswer: 0,
+                explanation: "'Ver cuadrícula' muestra líneas punteadas que indican los límites de las celdas en una tabla sin bordes visibles, facilitando su edición."
+            },
+            {
+                question: "Al personalizar un degradado de texto, ¿qué tipo de degradado NO se menciona comúnmente como opción?",
+                options: [
+                    "En espiral",
+                    "Lineal",
+                    "Radial",
+                    "Rectangular"
+                ],
+                correctAnswer: 0,
+                explanation: "'En espiral' no es una opción estándar para degradados de texto. Las opciones típicas son Lineal, Radial, Rectangular y De trayectoria."
+            },
+            {
+                question: "Cuando aplicamos un borde personalizado a un párrafo, ¿cuál de estos NO es un tipo de borde preestablecido en la ventana 'Bordes y sombreado'?",
+                options: [
+                    "Cuadro",
+                    "Sombra",
+                    "3D",
+                    "Degradado"
+                ],
+                correctAnswer: 3,
+                explanation: "'Degradado' no es un tipo de borde preestablecido. Los tipos de bordes comunes son Cuadro, Sombra, 3D, Personalizado, etc."
+            },
+            {
+                question: "Si queremos usar una imagen almacenada en nuestro computador como viñeta en una lista, ¿qué opción debemos seleccionar?",
+                options: [
+                    "Símbolo",
+                    "Imagen",
+                    "Fuente",
+                    "Formato de imagen"
+                ],
+                correctAnswer: 1,
+                explanation: "La opción 'Imagen' permite seleccionar una imagen almacenada localmente para usarla como viñeta personalizada en una lista."
+            },
+            {
+                question: "La ventana que permite ajustar el interlineado exacto, el espacio antes/después del párrafo y otras opciones detalladas se llama:",
+                options: [
+                    "Formato de texto",
+                    "Párrafo",
+                    "Fuente",
+                    "Diseño de página"
+                ],
+                correctAnswer: 1,
+                explanation: "La ventana 'Párrafo' contiene todas las opciones para ajustar interlineado, espacios antes/después, sangrías y otras configuraciones detalladas de párrafo."
+            }
+        ];
+
+        // Variables del juego
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedOption = null;
+        let gameFinished = false;
+        let userAnswers = []; // Para almacenar las respuestas del usuario
+
+        // Elementos del DOM
+        const gameArea = document.getElementById('game-area');
+        const scoreElement = document.querySelector('.score');
+        const questionNumberElement = document.querySelector('.question-number');
+        const nextButton = document.getElementById('next-btn');
+        const restartButton = document.getElementById('restart-btn');
+        const progressBar = document.querySelector('.progress');
+        const shuffleNotice = document.getElementById('shuffle-notice');
+
+        // Función para revolver las preguntas (algoritmo Fisher-Yates)
+        function shuffleQuestions() {
+            // Crear una copia profunda de las preguntas originales
+            const shuffled = JSON.parse(JSON.stringify(originalQuestions));
+            
+            // Algoritmo Fisher-Yates para revolver el array
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            return shuffled;
+        }
+
+        // Función para revolver las opciones de cada pregunta
+        function shuffleOptions(question) {
+            // Crear un array de índices de opciones
+            const optionIndices = question.options.map((_, index) => index);
+            
+            // Revolver los índices
+            for (let i = optionIndices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [optionIndices[i], optionIndices[j]] = [optionIndices[j], optionIndices[i]];
+            }
+            
+            // Crear nueva pregunta con opciones revueltas
+            const shuffledQuestion = {
+                ...question,
+                options: optionIndices.map(index => question.options[index]),
+                // Ajustar la respuesta correcta según el nuevo orden
+                correctAnswer: optionIndices.indexOf(question.correctAnswer)
+            };
+            
+            return shuffledQuestion;
+        }
+
+        // Función para mostrar notificación de revuelto
+        function showShuffleNotice() {
+            shuffleNotice.classList.add('show');
+            setTimeout(() => {
+                shuffleNotice.classList.remove('show');
+            }, 3000);
+        }
+
+        // Inicializar el juego
+        function initGame() {
+            // Revolver preguntas y opciones
+            currentQuestions = shuffleQuestions().map(shuffleOptions);
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedOption = null;
+            gameFinished = false;
+            userAnswers = new Array(currentQuestions.length).fill(null);
+            
+            scoreElement.textContent = score;
+            updateProgressBar();
+            loadQuestion();
+            nextButton.disabled = true;
+            nextButton.innerHTML = 'Siguiente <span>→</span>';
+            
+            // Mostrar notificación de revuelto
+            showShuffleNotice();
+            
+            // Aplicar animación de revuelto al contenedor
+            const container = document.querySelector('.container');
+            container.classList.add('shuffling');
+            setTimeout(() => {
+                container.classList.remove('shuffling');
+            }, 500);
+        }
+
+        // Cargar la pregunta actual
+        function loadQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            questionNumberElement.textContent = currentQuestionIndex + 1;
+            
+            let optionsHTML = '';
+            question.options.forEach((option, index) => {
+                optionsHTML += `
+                    <div class="option" data-index="${index}">
+                        <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                        <div class="option-text">${option}</div>
+                    </div>
+                `;
+            });
+            
+            const questionHTML = `
+                <div class="question-container">
+                    <div class="question-text">${question.question}</div>
+                    <div class="options-container">
+                        ${optionsHTML}
+                    </div>
+                    <div class="feedback"></div>
+                </div>
+            `;
+            
+            gameArea.innerHTML = questionHTML;
+            
+            // Si el usuario ya respondió esta pregunta, mostrar su respuesta
+            const userAnswer = userAnswers[currentQuestionIndex];
+            if (userAnswer !== null) {
+                const optionElements = document.querySelectorAll('.option');
+                optionElements[userAnswer].classList.add('selected');
+                
+                // Mostrar retroalimentación
+                const isCorrect = userAnswer === question.correctAnswer;
+                const feedbackElement = document.querySelector('.feedback');
+                
+                if (isCorrect) {
+                    feedbackElement.textContent = "¡Correcto!";
+                    feedbackElement.className = "feedback correct";
+                    optionElements[userAnswer].classList.add('correct');
+                } else {
+                    feedbackElement.textContent = "Incorrecto";
+                    feedbackElement.className = "feedback incorrect";
+                    optionElements[userAnswer].classList.add('incorrect');
+                    optionElements[question.correctAnswer].classList.add('correct');
+                }
+                
+                // Añadir información adicional
+                const feedbackInfo = document.createElement('div');
+                feedbackInfo.className = 'feedback-info';
+                feedbackInfo.textContent = question.explanation;
+                feedbackElement.appendChild(feedbackInfo);
+                
+                // Habilitar el botón de siguiente
+                nextButton.disabled = false;
+            } else {
+                // Añadir eventos a las opciones
+                document.querySelectorAll('.option').forEach(option => {
+                    option.addEventListener('click', selectOption);
+                });
+            }
+            
+            // Actualizar el texto del botón si es la última pregunta
+            if (currentQuestionIndex === currentQuestions.length - 1) {
+                nextButton.innerHTML = 'Ver Resultados <span>→</span>';
+            } else {
+                nextButton.innerHTML = 'Siguiente <span>→</span>';
+            }
+        }
+
+        // Seleccionar una opción
+        function selectOption(e) {
+            if (gameFinished) return;
+            
+            const optionElement = e.currentTarget;
+            const optionIndex = parseInt(optionElement.getAttribute('data-index'));
+            
+            // Si ya hay una opción seleccionada, no hacer nada
+            if (selectedOption !== null) return;
+            
+            selectedOption = optionIndex;
+            
+            // Guardar la respuesta del usuario
+            userAnswers[currentQuestionIndex] = optionIndex;
+            
+            // Marcar la opción seleccionada
+            document.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            optionElement.classList.add('selected');
+            
+            // Verificar si la respuesta es correcta
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = optionIndex === question.correctAnswer;
+            
+            // Mostrar retroalimentación
+            const feedbackElement = document.querySelector('.feedback');
+            
+            if (isCorrect) {
+                feedbackElement.textContent = "¡Correcto!";
+                feedbackElement.className = "feedback correct";
+                score++;
+                scoreElement.textContent = score;
+                optionElement.classList.add('correct');
+            } else {
+                feedbackElement.textContent = "Incorrecto";
+                feedbackElement.className = "feedback incorrect";
+                optionElement.classList.add('incorrect');
+                
+                // Mostrar la opción correcta
+                document.querySelectorAll('.option')[question.correctAnswer].classList.add('correct');
+            }
+            
+            // Añadir información adicional
+            const feedbackInfo = document.createElement('div');
+            feedbackInfo.className = 'feedback-info';
+            feedbackInfo.textContent = question.explanation;
+            feedbackElement.appendChild(feedbackInfo);
+            
+            // Habilitar el botón de siguiente
+            nextButton.disabled = false;
+        }
+
+        // Siguiente pregunta o mostrar resultados
+        function nextQuestion() {
+            if (nextButton.disabled) return;
+            
+            // Si es la última pregunta, mostrar resultados
+            if (currentQuestionIndex === currentQuestions.length - 1) {
+                showResults();
+                return;
+            }
+            
+            // Ir a la siguiente pregunta
+            currentQuestionIndex++;
+            selectedOption = null;
+            nextButton.disabled = true;
+            updateProgressBar();
+            loadQuestion();
+        }
+
+        // Mostrar resultados finales
+        function showResults() {
+            gameFinished = true;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === currentQuestions.length) {
+                message = "¡Excelente! Eres un experto en herramientas de formato de texto.";
+                emoji = "🏆";
+            } else if (score >= currentQuestions.length * 0.7) {
+                message = "¡Muy bien! Tienes un buen conocimiento de las herramientas de formato.";
+                emoji = "👍";
+            } else if (score >= currentQuestions.length * 0.5) {
+                message = "¡Bien hecho! Tienes conocimientos básicos, pero puedes mejorar.";
+                emoji = "📚";
+            } else {
+                message = "Necesitas repasar más las herramientas de formato de texto.";
+                emoji = "💪";
+            }
+            
+            const resultsHTML = `
+                <div class="results-container" style="display: block;">
+                    <h2 class="results-title">Resultados del Juego ${emoji}</h2>
+                    <div class="final-score">${score}/${currentQuestions.length}</div>
+                    <p class="results-message">${message}</p>
+                    <p class="results-message" style="font-size: 1.1rem; color: #3498db;">
+                        <strong>¡Las preguntas se revuelven cada vez que reinicias!</strong><br>
+                        Prueba otra vez para ver diferentes órdenes de preguntas y opciones.
+                    </p>
+                    <button id="review-btn" class="btn btn-restart" style="margin: 0 auto;">
+                        <span>📖</span> Revisar Respuestas
+                    </button>
+                </div>
+            `;
+            
+            gameArea.innerHTML = resultsHTML;
+            
+            // Añadir evento al botón de revisar
+            document.getElementById('review-btn').addEventListener('click', reviewAnswers);
+        }
+
+        // Revisar respuestas
+        function reviewAnswers() {
+            let reviewHTML = '<div class="question-container">';
+            reviewHTML += '<div class="question-text" style="text-align: center; margin-bottom: 30px; font-size: 1.5rem;">📝 Revisión de Respuestas</div>';
+            
+            currentQuestions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === question.correctAnswer;
+                const answerClass = isCorrect ? 'correct' : 'incorrect';
+                
+                reviewHTML += `
+                    <div style="margin-bottom: 25px; padding: 20px; border-radius: 10px; border-left: 5px solid ${isCorrect ? '#27ae60' : '#e74c3c'}; background-color: ${isCorrect ? '#d5f4e6' : '#fadbd8'};">
+                        <div style="font-weight: bold; margin-bottom: 10px; color: #2c3e50;">Pregunta ${index + 1}: ${question.question}</div>
+                        <div style="margin-bottom: 8px;"><strong>Tu respuesta:</strong> ${userAnswer !== null ? question.options[userAnswer] : 'No respondida'}</div>
+                        <div style="margin-bottom: 8px;"><strong>Respuesta correcta:</strong> ${question.options[question.correctAnswer]}</div>
+                        <div><strong>Explicación:</strong> ${question.explanation}</div>
+                    </div>
+                `;
+            });
+            
+            reviewHTML += '</div>';
+            
+            gameArea.innerHTML = reviewHTML;
+            
+            // Añadir botón para volver a jugar
+            const backButton = document.createElement('button');
+            backButton.className = 'btn btn-restart';
+            backButton.innerHTML = '<span>↻</span> Jugar Nuevamente';
+            backButton.style.margin = '30px auto 0';
+            backButton.style.display = 'block';
+            backButton.addEventListener('click', initGame);
+            
+            gameArea.appendChild(backButton);
+        }
+
+        // Actualizar barra de progreso
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Event listeners
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', initGame);
+
+        // Inicializar el juego al cargar la página
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
