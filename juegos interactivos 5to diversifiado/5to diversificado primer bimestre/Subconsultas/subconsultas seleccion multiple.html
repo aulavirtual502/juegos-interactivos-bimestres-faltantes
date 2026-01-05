@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Educativo: Subconsultas en Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8B4513 0%, #DAA520 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .game-card {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f4ff;
+        }
+        
+        .progress-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .progress-bar {
+            flex-grow: 1;
+            height: 12px;
+            background-color: #f5f0e6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #8B4513, #DAA520);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .question-counter {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8B4513;
+            background-color: #f7f2e8;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #DAA520;
+            background-color: #fcf8e8;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .question-area {
+            margin-bottom: 30px;
+        }
+        
+        .question-text {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            padding: 15px;
+            background-color: #f9fbff;
+            border-radius: 15px;
+            border-left: 6px solid #8B4513;
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .option {
+            padding: 20px;
+            background-color: white;
+            border: 2px solid #f5f0e6;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            border-color: #8B4513;
+        }
+        
+        .option.selected {
+            border-color: #DAA520;
+            background-color: #fcf8e8;
+        }
+        
+        .option.correct {
+            border-color: #2ecc71;
+            background-color: #e8f7ef;
+        }
+        
+        .option.incorrect {
+            border-color: #e74c3c;
+            background-color: #fdeded;
+        }
+        
+        .option.disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+        
+        .option-letter {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f5f0e6;
+            color: #8B4513;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .option.selected .option-letter {
+            background-color: #DAA520;
+            color: white;
+        }
+        
+        .option.correct .option-letter {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .option.incorrect .option-letter {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #next-btn {
+            background: linear-gradient(to right, #8B4513, #DAA520);
+            color: white;
+            margin-left: auto;
+        }
+        
+        #reset-btn {
+            background: linear-gradient(to right, #4169E1, #8A2BE2);
+            color: white;
+        }
+        
+        #submit-btn {
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            color: white;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .feedback-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .feedback-correct {
+            background-color: #e8f7ef;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+        
+        .feedback-incorrect {
+            background-color: #fdeded;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+        }
+        
+        .feedback-final {
+            background: linear-gradient(to right, #f7f2e8, #fcf8e8);
+            color: #333;
+            border: 2px solid #8B4513;
+            display: block;
+        }
+        
+        .results-summary {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            text-align: center;
+        }
+        
+        .results-summary h2 {
+            color: #8B4513;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+        }
+        
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8B4513, #DAA520);
+            color: white;
+            box-shadow: 0 10px 25px rgba(139, 69, 19, 0.3);
+        }
+        
+        .score-percentage {
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+        
+        .score-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .results-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            padding: 20px;
+            border-radius: 15px;
+            background-color: #f9fbff;
+        }
+        
+        .result-item.correct {
+            border-left: 6px solid #2ecc71;
+        }
+        
+        .result-item.incorrect {
+            border-left: 6px solid #e74c3c;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .instructions h3 {
+            color: #8B4513;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 1.7;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        
+        .sql-example {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            color: #d63384;
+        }
+        
+        .subquery-overview {
+            background-color: #f8f9fa;
+            border-left: 4px solid #8B4513;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        
+        .subquery-type {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+        
+        .query-section {
+            background-color: #f7f2e8;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .section-title {
+            color: #8B4513;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .subquery-concept {
+            background-color: #e8f4ff;
+            border-left: 4px solid #4169E1;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #1a237e;
+        }
+        
+        .aggregate-section {
+            background-color: #f3e5f5;
+            border-left: 4px solid #8A2DE2;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #4a148c;
+        }
+        
+        .query-process {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #856404;
+        }
+        
+        .subquery-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .flow-step {
+            background-color: white;
+            border: 2px solid #DAA520;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px;
+            text-align: center;
+            width: 90%;
+        }
+        
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: #8B4513;
+            margin: 5px 0;
+        }
+        
+        .criteria-example {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            color: #155724;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .game-card {
+                padding: 20px;
+            }
+            
+            .question-text {
+                font-size: 1.5rem;
+            }
+            
+            .progress-container {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .progress-info {
+                justify-content: space-between;
+            }
+            
+            .progress-bar {
+                margin: 10px 0;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .score-percentage {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.9rem;
+            }
+            
+            .question-text {
+                font-size: 1.3rem;
+            }
+            
+            .option {
+                padding: 15px;
+                font-size: 1.1rem;
+            }
+            
+            .option-letter {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+            
+            .results-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-layer-group"></i> Juego Educativo: Subconsultas en Access</h1>
+            <p class="subtitle">Elige la respuesta correcta para cada pregunta sobre subconsultas y análisis avanzado en Microsoft Access. ¡Domina el filtrado basado en resultados de otras consultas!</p>
+        </header>
+        
+        <div class="game-card" id="game-card">
+            <div class="progress-container">
+                <div class="progress-info">
+                    <div class="question-counter">
+                        <i class="fas fa-list-ol"></i> Pregunta: <span id="current-question">1</span>/<span id="total-questions">10</span>
+                    </div>
+                    <div class="score-display">
+                        <i class="fas fa-star"></i> Puntuación: <span id="score">0</span>/10
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="question-area">
+                <div class="question-text" id="question-text">
+                    <!-- La pregunta se cargará aquí -->
+                </div>
+                
+                <div class="options-container" id="options-container">
+                    <!-- Las opciones se cargarán aquí -->
+                </div>
+                
+                <div class="feedback-container" id="feedback-container">
+                    <!-- El feedback se mostrará aquí -->
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="reset-btn">
+                    <i class="fas fa-redo-alt"></i> Reiniciar Juego
+                </button>
+                <button id="submit-btn">
+                    <i class="fas fa-check-circle"></i> Verificar Respuesta
+                </button>
+                <button id="next-btn" disabled>
+                    <i class="fas fa-arrow-right"></i> Siguiente Pregunta
+                </button>
+            </div>
+        </div>
+        
+        <div class="results-summary" id="results-summary">
+            <h2><i class="fas fa-trophy"></i> Resultados Finales</h2>
+            <div class="score-circle">
+                <div class="score-percentage" id="final-percentage">0%</div>
+                <div class="score-text" id="final-score">0/10</div>
+            </div>
+            
+            <div class="results-details" id="results-details">
+                <!-- Los detalles de cada pregunta se cargarán aquí -->
+            </div>
+            
+            <button id="play-again-btn" style="margin-top: 30px;">
+                <i class="fas fa-play-circle"></i> Jugar Nuevamente
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+            <ol>
+                <li>Lee cada pregunta cuidadosamente sobre subconsultas en Microsoft Access.</li>
+                <li>Selecciona una de las cuatro opciones de respuesta haciendo clic en ella.</li>
+                <li>Haz clic en "Verificar Respuesta" para comprobar si tu selección es correcta.</li>
+                <li>Usa "Siguiente Pregunta" para avanzar al siguiente ejercicio.</li>
+                <li>Puedes reiniciar el juego en cualquier momento con el botón correspondiente.</li>
+                <li>Al finalizar las 10 preguntas, verás un resumen de tus resultados.</li>
+            </ol>
+            
+            <div class="subquery-overview">
+                <strong>Subconsultas y Análisis Avanzado en Access - Conceptos principales:</strong>
+                
+                <div class="query-section">
+                    <div class="section-title"><i class="fas fa-filter"></i> ¿Qué es una Subconsulta?</div>
+                    <div class="subquery-concept">
+                        <strong>Definición:</strong> Consulta que filtra datos basándose en el resultado de otra consulta<br>
+                        <strong>Propósito:</strong> Realizar análisis avanzados filtrando datos a partir de resultados de otras consultas<br>
+                        <strong>Ejemplo:</strong> Mostrar productos cuyo precio es mayor que el promedio general
+                    </div>
+                </div>
+                
+                <div class="query-section">
+                    <div class="section-title"><i class="fas fa-calculator"></i> Funciones Agregadas en Subconsultas</div>
+                    <div class="aggregate-section">
+                        <strong>Funciones clave:</strong><br>
+                        - <span class="sql-example">Promedio</span>: Calcular valor medio<br>
+                        - <span class="sql-example">Máximo</span>: Última fecha de movimiento<br>
+                        - <span class="sql-example">Suma</span>: Total vendido por producto<br>
+                        <strong>Activación:</strong> Botón <span class="sql-example">Totales</span> en vista "Hoja de datos"
+                    </div>
+                </div>
+                
+                <div class="query-section">
+                    <div class="section-title"><i class="fas fa-sitemap"></i> Flujo de Trabajo Típico</div>
+                    <div class="subquery-flow">
+                        <div class="flow-step">1. Calcular valor (ej: promedio de precios)</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">2. Copiar valor calculado</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">3. Usar en criterio de otra consulta</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-step">4. Filtrar datos basándose en ese valor</div>
+                    </div>
+                    
+                    <div class="criteria-example">
+                        <strong>Ejemplo de criterio:</strong><br>
+                        Para productos con precio mayor al promedio:<br>
+                        <span class="sql-example">> [Valor copiado del promedio]</span>
+                    </div>
+                </div>
+                
+                <div class="query-section">
+                    <div class="section-title"><i class="fas fa-project-diagram"></i> Consultas Correlacionadas</div>
+                    <div class="query-process">
+                        <strong>Definición:</strong> Subconsulta que se ejecuta para cada fila de la consulta principal<br>
+                        <strong>Ejemplo práctico:</strong> Mostrar para cada producto la fecha más reciente de movimiento<br>
+                        <strong>Relación necesaria:</strong> Por campo común (ej: IDProducto)<br>
+                        <strong>Uso:</strong> Agregar consulta como fuente de datos y relacionarla con tabla principal
+                    </div>
+                </div>
+                
+                <div class="query-section">
+                    <div class="section-title"><i class="fas fa-search"></i> Criterios en Consultas de Totales</div>
+                    <div class="subquery-type">
+                        <strong>Ubicación correcta:</strong><br>
+                        - Para filtrar resultados agregados: fila "Criterios" del campo con función<br>
+                        <strong>Ejemplo:</strong> Productos con suma total de ventas > 2 unidades<br>
+                        <span class="sql-example">>2</span> en fila "Criterios" de "SumaDeCantidad"
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego: preguntas, respuestas correctas y opciones incorrectas
+        const gameData = [
+            {
+                id: 1,
+                question: "¿Qué tipo de consulta se utiliza para filtrar datos basándose en el resultado de otra consulta?",
+                correctAnswer: "Subconsulta (consulta dependiente)",
+                incorrectAnswers: [
+                    "Consulta de actualización",
+                    "Consulta de creación de tabla",
+                    "Consulta con parámetros"
+                ]
+            },
+            {
+                id: 2,
+                question: "Si queremos mostrar los productos cuyo precio unitario es mayor que el promedio general, ¿qué debemos hacer primero en la consulta?",
+                correctAnswer: "Calcular el promedio de precios en la vista Hoja de datos usando la opción 'Totales'",
+                incorrectAnswers: [
+                    "Eliminar los productos con precio más bajo",
+                    "Crear una relación con otra tabla",
+                    "Usar la función 'Suma' en lugar de 'Promedio'"
+                ]
+            },
+            {
+                id: 3,
+                question: "Para obtener la última fecha de movimiento de inventario por producto, ¿qué función agregada se debe usar en el campo 'FechaMovimiento'?",
+                correctAnswer: "Máximo",
+                incorrectAnswers: [
+                    "Suma",
+                    "Promedio",
+                    "Mínimo"
+                ]
+            },
+            {
+                id: 4,
+                question: "En una consulta de totales, si queremos filtrar solo los productos cuya suma total de ventas sea mayor a 2 unidades, ¿dónde escribimos el criterio '>2'?",
+                correctAnswer: "En la fila 'Criterios' del campo 'SumaDeCantidad'",
+                incorrectAnswers: [
+                    "En la fila 'Criterios' del campo 'Cantidad'",
+                    "En la fila 'Total' del campo 'Cantidad'",
+                    "En la fila 'Condición' del campo 'NombreProducto'"
+                ]
+            },
+            {
+                id: 5,
+                question: "¿Qué botón en la vista 'Hoja de datos' se debe hacer clic para agregar funciones como 'Promedio' o 'Suma' a una columna?",
+                correctAnswer: "Totales",
+                incorrectAnswers: [
+                    "Ejecutar",
+                    "Diseño",
+                    "Parámetros"
+                ]
+            },
+            {
+                id: 6,
+                question: "Si primero creamos una consulta que calcula el total vendido por producto (Q_TotalVendidoPorProducto), ¿qué hacemos después para usarla en otra consulta?",
+                correctAnswer: "La agregamos como fuente de datos en una nueva consulta, relacionándola con la tabla 'Productos'",
+                incorrectAnswers: [
+                    "La eliminamos y volvemos a crear los cálculos manualmente",
+                    "La convertimos en una tabla permanente",
+                    "La ocultamos para que no aparezca en la base de datos"
+                ]
+            },
+            {
+                id: 7,
+                question: "¿Qué permite hacer una 'consulta correlacionada' en el ejemplo del video?",
+                correctAnswer: "Mostrar para cada producto la fecha más reciente de movimiento (usando la función Máx)",
+                incorrectAnswers: [
+                    "Sumar todos los precios unitarios",
+                    "Eliminar registros duplicados automáticamente",
+                    "Cambiar el nombre de los productos"
+                ]
+            },
+            {
+                id: 8,
+                question: "¿Qué tipo de relación se necesita entre la tabla 'Productos' y la consulta 'Q_TotalVendidoPorProducto' para poder usarlas juntas en una nueva consulta?",
+                correctAnswer: "Relación por el campo común 'IDProducto'",
+                incorrectAnswers: [
+                    "Relación muchos a muchos",
+                    "Relación de integridad referencial",
+                    "No se necesita relación, basta con agregar ambas"
+                ]
+            },
+            {
+                id: 9,
+                question: "¿Cuál es el propósito principal de usar subconsultas en Access?",
+                correctAnswer: "Realizar análisis avanzados filtrando datos a partir de resultados de otras consultas",
+                incorrectAnswers: [
+                    "Hacer que la base de datos ocupe menos espacio",
+                    "Crear automáticamente formularios e informes",
+                    "Reemplazar todas las tablas originales"
+                ]
+            },
+            {
+                id: 10,
+                question: "En el ejemplo de 'productos con precio mayor al promedio', ¿qué se escribe en la fila 'Criterios' del campo 'PrecioUnitario' después de copiar el valor del promedio?",
+                correctAnswer: "> [Valor copiado del promedio]",
+                incorrectAnswers: [
+                    "=[Promedio]",
+                    "'Mayor que el promedio'",
+                    ">PROMEDIO(PrecioUnitario)"
+                ]
+            }
+        ];
+
+        // Variables globales del juego
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+        let selectedOption = null;
+        let answerSubmitted = false;
+        let userAnswers = [];
+
+        // Inicializar el juego
+        function initGame() {
+            // Mezclar las preguntas aleatoriamente
+            questions = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Reiniciar variables
+            currentQuestionIndex = 0;
+            score = 0;
+            selectedOption = null;
+            answerSubmitted = false;
+            userAnswers = [];
+            
+            // Actualizar la interfaz
+            updateProgress();
+            loadQuestion();
+            updateScore();
+            
+            // Ocultar resultados y mostrar el juego
+            document.getElementById('results-summary').style.display = 'none';
+            document.getElementById('game-card').style.display = 'flex';
+            
+            // Reiniciar botones
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('next-btn').disabled = true;
+            
+            // Restaurar texto original del botón "Siguiente"
+            document.getElementById('next-btn').innerHTML = '<i class="fas fa-arrow-right"></i> Siguiente Pregunta';
+            
+            // Limpiar feedback
+            document.getElementById('feedback-container').className = 'feedback-container';
+            document.getElementById('feedback-container').textContent = '';
+        }
+
+        // Cargar la pregunta actual
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            
+            // Mostrar la pregunta
+            questionText.textContent = question.question;
+            
+            // Crear un array con todas las opciones (correcta + incorrectas)
+            const allOptions = [question.correctAnswer, ...question.incorrectAnswers];
+            
+            // Mezclar las opciones aleatoriamente
+            const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
+            
+            // Limpiar opciones anteriores
+            optionsContainer.innerHTML = '';
+            
+            // Crear las opciones de respuesta
+            const letters = ['A', 'B', 'C', 'D'];
+            shuffledOptions.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.dataset.value = option;
+                
+                // Marcar si esta opción es la correcta
+                if (option === question.correctAnswer) {
+                    optionElement.dataset.correct = 'true';
+                }
+                
+                // Crear el contenido de la opción
+                optionElement.innerHTML = `
+                    <div class="option-letter">${letters[index]}</div>
+                    <div class="option-text">${option}</div>
+                `;
+                
+                // Agregar event listener para seleccionar
+                optionElement.addEventListener('click', () => selectOption(optionElement));
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Actualizar contador de preguntas
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+            
+            // Reiniciar estado de selección
+            selectedOption = null;
+            answerSubmitted = false;
+            
+            // Actualizar botones - Asegurarse que estén en estado inicial
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('next-btn').disabled = true;
+            
+            // Limpiar feedback
+            document.getElementById('feedback-container').className = 'feedback-container';
+            document.getElementById('feedback-container').textContent = '';
+        }
+
+        // Seleccionar una opción
+        function selectOption(optionElement) {
+            if (answerSubmitted) return;
+            
+            // Deseleccionar opción anterior
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            
+            // Seleccionar nueva opción
+            optionElement.classList.add('selected');
+            selectedOption = optionElement;
+            
+            // Habilitar botón de verificar
+            document.getElementById('submit-btn').disabled = false;
+        }
+
+        // Verificar la respuesta seleccionada
+        function checkAnswer() {
+            if (!selectedOption || answerSubmitted) return;
+            
+            answerSubmitted = true;
+            
+            // Obtener datos de la pregunta actual
+            const question = questions[currentQuestionIndex];
+            const isCorrect = selectedOption.dataset.correct === 'true';
+            
+            // Deshabilitar todas las opciones
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+                if (opt.dataset.correct === 'true') {
+                    opt.classList.add('correct');
+                }
+            });
+            
+            // Marcar la opción seleccionada como correcta o incorrecta
+            if (isCorrect) {
+                selectedOption.classList.add('correct');
+                score++;
+                showFeedback('¡Respuesta Correcta!', 'correct');
+            } else {
+                selectedOption.classList.add('incorrect');
+                showFeedback('Respuesta Incorrecta. La opción correcta está marcada en verde.', 'incorrect');
+            }
+            
+            // Guardar la respuesta del usuario
+            userAnswers.push({
+                question: question.question,
+                userAnswer: selectedOption.querySelector('.option-text').textContent,
+                correctAnswer: question.correctAnswer,
+                isCorrect: isCorrect
+            });
+            
+            // Actualizar puntuación
+            updateScore();
+            
+            // Actualizar botones
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('next-btn').disabled = false;
+            
+            // Si es la última pregunta, cambiar el texto del botón
+            if (currentQuestionIndex === questions.length - 1) {
+                document.getElementById('next-btn').innerHTML = '<i class="fas fa-flag-checkered"></i> Ver Resultados';
+            }
+        }
+
+        // Mostrar feedback
+        function showFeedback(message, type) {
+            const feedbackContainer = document.getElementById('feedback-container');
+            feedbackContainer.textContent = message;
+            feedbackContainer.className = `feedback-container feedback-${type}`;
+        }
+
+        // Ir a la siguiente pregunta
+        function nextQuestion() {
+            if (!answerSubmitted) return;
+            
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+                updateProgress();
+            } else {
+                showFinalResults();
+            }
+        }
+
+        // Mostrar resultados finales
+        function showFinalResults() {
+            // Ocultar juego y mostrar resultados
+            document.getElementById('game-card').style.display = 'none';
+            document.getElementById('results-summary').style.display = 'block';
+            
+            // Calcular porcentaje
+            const percentage = Math.round((score / questions.length) * 100);
+            
+            // Actualizar resultados
+            document.getElementById('final-percentage').textContent = `${percentage}%`;
+            document.getElementById('final-score').textContent = `${score}/${questions.length}`;
+            
+            // Generar detalles de resultados
+            const resultsDetails = document.getElementById('results-details');
+            resultsDetails.innerHTML = '';
+            
+            userAnswers.forEach((answer, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = `result-item ${answer.isCorrect ? 'correct' : 'incorrect'}`;
+                
+                resultItem.innerHTML = `
+                    <h4>Pregunta ${index + 1}</h4>
+                    <p><strong>Tu respuesta:</strong> ${answer.userAnswer}</p>
+                    <p><strong>Respuesta correcta:</strong> ${answer.correctAnswer}</p>
+                    <p><strong>Resultado:</strong> ${answer.isCorrect ? '✅ Correcto' : '❌ Incorrecto'}</p>
+                `;
+                
+                resultsDetails.appendChild(resultItem);
+            });
+        }
+
+        // Actualizar barra de progreso
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const progressPercentage = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
+        }
+
+        // Actualizar puntuación
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar total de preguntas
+            document.getElementById('total-questions').textContent = gameData.length;
+            
+            // Inicializar juego
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+            document.getElementById('next-btn').addEventListener('click', nextQuestion);
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('play-again-btn').addEventListener('click', initGame);
+        });
+    </script>
+</body>
+</html>
