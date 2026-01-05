@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Educativo: Diseño de Sobres en Word</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8A2BE2 0%, #4169E1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel h2 {
+            color: #2575fc;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #f0f4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel h2 i {
+            font-size: 1.5rem;
+        }
+        
+        #answers-panel h2 {
+            color: #8A2BE2;
+        }
+        
+        .items-container {
+            flex-grow: 1;
+            min-height: 400px;
+            border-radius: 10px;
+            padding: 15px;
+            background-color: #f9fbff;
+            border: 2px dashed #d1e0ff;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4169E1;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .question-item {
+            border-left-color: #8A2BE2;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .answer-item {
+            cursor: grab;
+            border-left-color: #4169E1;
+        }
+        
+        .answer-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .answer-item.dragging {
+            opacity: 0.7;
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .answer-item.dropped {
+            cursor: default;
+            opacity: 0.9;
+        }
+        
+        .question-item.correct-match {
+            background-color: #e8f7ef;
+            border-left-color: #2ecc71;
+        }
+        
+        .question-item.incorrect-match {
+            background-color: #fdeded;
+            border-left-color: #e74c3c;
+        }
+        
+        .answer-item.correct-match {
+            background-color: #e8f7ef;
+            border-left-color: #2ecc71;
+        }
+        
+        .answer-item.incorrect-match {
+            background-color: #fdeded;
+            border-left-color: #e74c3c;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        #reset-btn {
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        #check-btn {
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            color: white;
+        }
+        
+        #check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .score-board {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-top: 10px;
+        }
+        
+        .score-board h3 {
+            color: #4169E1;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #8A2BE2;
+        }
+        
+        .score-label {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+        }
+        
+        .feedback.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .feedback.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .instructions h3 {
+            color: #4169E1;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .match-indicator {
+            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+        
+        .match-correct {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .match-incorrect {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            min-height: 60px;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+        }
+        
+        .drop-zone.active {
+            border-color: #4169E1;
+            background-color: #f0f7ff;
+        }
+        
+        .dropped-answer {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #4169E1;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .panel {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            button {
+                padding: 12px 20px;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .panel h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-envelope"></i> Juego Educativo: Diseño de Sobres en Word</h1>
+            <p class="subtitle">Arrastra cada respuesta a su pregunta correspondiente. ¡Pon a prueba tus conocimientos sobre cómo diseñar sobres en Microsoft Word!</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="panel" id="questions-panel">
+                <h2><i class="fas fa-question-circle"></i> Preguntas</h2>
+                <div class="items-container" id="questions-container">
+                    <!-- Las preguntas con zonas de soltado se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="panel" id="answers-panel">
+                <h2><i class="fas fa-clipboard-check"></i> Respuestas para Arrastrar</h2>
+                <div class="items-container" id="answers-container">
+                    <!-- Las respuestas arrastrables se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="reset-btn">
+                <i class="fas fa-redo-alt"></i> Reiniciar Juego
+            </button>
+            <button id="check-btn">
+                <i class="fas fa-check-circle"></i> Verificar Respuestas
+            </button>
+        </div>
+        
+        <div class="score-board">
+            <h3><i class="fas fa-chart-line"></i> Progreso</h3>
+            <div class="score-container">
+                <div class="score-item">
+                    <div class="score-value" id="correct-count">0</div>
+                    <div class="score-label">Correctas</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="total-count">10</div>
+                    <div class="score-label">Total de Preguntas</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="incorrect-count">0</div>
+                    <div class="score-label">Incorrectas</div>
+                </div>
+            </div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+            <ol>
+                <li>Arrastra cada respuesta desde el panel derecho y suéltala en la pregunta correspondiente del panel izquierdo.</li>
+                <li>Cada respuesta solo puede emparejarse con una pregunta.</li>
+                <li>Haz clic en "Verificar Respuestas" para comprobar tus resultados.</li>
+                <li>Usa "Reiniciar Juego" para barajar las respuestas y empezar de nuevo.</li>
+                <li>Las respuestas correctas se mostrarán en verde y las incorrectas en rojo.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego: preguntas y respuestas correctas sobre diseño de sobres en Word
+        const gameData = [
+            {
+                id: 1,
+                question: "¿Qué tipo de documento se está diseñando paso a paso?",
+                answer: "Un sobre para enviar por correo"
+            },
+            {
+                id: 2,
+                question: "¿Qué se debe hacer primero para elegir el tamaño del sobre?",
+                answer: "Buscar en las plantillas integradas o usar la barra de búsqueda"
+            },
+            {
+                id: 3,
+                question: "Si el tamaño predeterminado no sirve, ¿dónde se va para cambiar las medidas?",
+                answer: "Pestaña 'Diseño de página' -> 'Tamaño'"
+            },
+            {
+                id: 4,
+                question: "¿Qué herramienta se usa para escribir la dirección del remitente?",
+                answer: "Insertar un cuadro de texto"
+            },
+            {
+                id: 5,
+                question: "¿En qué parte del sobre normalmente va la dirección del remitente?",
+                answer: "Esquina superior izquierda"
+            },
+            {
+                id: 6,
+                question: "¿Dónde se coloca normalmente la dirección del destinatario?",
+                answer: "Centro derecho del sobre"
+            },
+            {
+                id: 7,
+                question: "Para mantener los textos alineados, ¿qué se puede activar en la pestaña 'Vista'?",
+                answer: "Guías de alineación y reglas"
+            },
+            {
+                id: 8,
+                question: "Antes de imprimir en el sobre real, ¿qué se recomienda hacer?",
+                answer: "Imprimir una prueba en papel normal"
+            },
+            {
+                id: 9,
+                question: "¿Qué se debe verificar en la configuración de impresión?",
+                answer: "Que el tamaño del papel coincida con el sobre cargado"
+            },
+            {
+                id: 10,
+                question: "¿Qué se puede insertar para dar un toque profesional, como el logo de una empresa?",
+                answer: "Una imagen (logo)"
+            }
+        ];
+
+        // Variables globales del juego
+        let questions = [];
+        let answers = [];
+        let draggedItem = null;
+        let matches = {};
+        let correctMatches = 0;
+        let incorrectMatches = 0;
+
+        // Inicializar el juego
+        function initGame() {
+            // Mezclar las preguntas y respuestas aleatoriamente
+            const shuffledData = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Separar preguntas y respuestas
+            questions = shuffledData.map(item => ({
+                id: item.id,
+                text: item.question,
+                correctAnswer: item.answer
+            }));
+            
+            answers = shuffledData.map(item => ({
+                id: item.id,
+                text: item.answer,
+                correctQuestion: item.question
+            }));
+            
+            // Mezclar las respuestas por separado
+            answers = answers.sort(() => Math.random() - 0.5);
+            
+            // Reiniciar emparejamientos
+            matches = {};
+            correctMatches = 0;
+            incorrectMatches = 0;
+            
+            // Actualizar la interfaz
+            renderGame();
+            updateScore();
+            
+            // Ocultar feedback
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        // Renderizar preguntas y respuestas
+        function renderGame() {
+            const questionsContainer = document.getElementById('questions-container');
+            const answersContainer = document.getElementById('answers-container');
+            
+            // Limpiar contenedores
+            questionsContainer.innerHTML = '';
+            answersContainer.innerHTML = '';
+            
+            // Renderizar preguntas con zonas de soltado
+            questions.forEach(item => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'item question-item';
+                questionElement.id = `question-${item.id}`;
+                questionElement.dataset.id = item.id;
+                
+                // Crear contenido de la pregunta
+                questionElement.innerHTML = `
+                    <div class="question-text">${item.text}</div>
+                    <div class="drop-zone" id="drop-zone-${item.id}" data-id="${item.id}">
+                        <div class="drop-label">Arrastra aquí la respuesta</div>
+                        ${matches[item.id] ? `
+                            <div class="dropped-answer">
+                                ${matches[item.id].answerText}
+                                <span class="match-indicator ${matches[item.id].correct ? 'match-correct' : 'match-incorrect'}">
+                                    ${matches[item.id].correct ? '✓' : '✗'}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                // Aplicar estilos si ya tiene respuesta
+                if (matches[item.id]) {
+                    const matchStatus = matches[item.id].correct ? 'correct-match' : 'incorrect-match';
+                    questionElement.classList.add(matchStatus);
+                }
+                
+                questionsContainer.appendChild(questionElement);
+            });
+            
+            // Renderizar respuestas arrastrables
+            answers.forEach(item => {
+                const answerElement = document.createElement('div');
+                answerElement.className = 'item answer-item';
+                answerElement.id = `answer-${item.id}`;
+                answerElement.textContent = item.text;
+                answerElement.draggable = true;
+                answerElement.dataset.id = item.id;
+                
+                // Marcar respuesta si ya está usada
+                const isUsed = Object.values(matches).some(match => match.answerId === item.id);
+                if (isUsed) {
+                    answerElement.classList.add('dropped');
+                    answerElement.draggable = false;
+                    
+                    // Aplicar color según si es correcta o incorrecta
+                    const match = Object.values(matches).find(match => match.answerId === item.id);
+                    if (match) {
+                        const matchStatus = match.correct ? 'correct-match' : 'incorrect-match';
+                        answerElement.classList.add(matchStatus);
+                    }
+                }
+                
+                answersContainer.appendChild(answerElement);
+            });
+            
+            // Agregar event listeners para arrastrar y soltar
+            setupDragAndDrop();
+        }
+
+        // Configurar eventos de arrastrar y soltar
+        function setupDragAndDrop() {
+            // Elementos arrastrables (respuestas)
+            const draggables = document.querySelectorAll('.answer-item:not(.dropped)');
+            const droppables = document.querySelectorAll('.drop-zone');
+            
+            // Eventos para elementos arrastrables
+            draggables.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            // Eventos para elementos donde se pueden soltar (zonas de preguntas)
+            droppables.forEach(item => {
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // Manejadores de eventos de arrastrar y soltar
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+            
+            // Quitar clase active de todas las zonas
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('active');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            // Solo resaltar si no tiene ya una respuesta
+            if (!this.querySelector('.dropped-answer')) {
+                this.classList.add('active');
+            }
+        }
+
+        function handleDragLeave() {
+            this.classList.remove('active');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            
+            // Verificar que hay un elemento arrastrado
+            if (!draggedItem) return;
+            
+            const answerId = parseInt(draggedItem.dataset.id);
+            const questionId = parseInt(this.dataset.id);
+            
+            // Verificar si ya existe un emparejamiento para esta pregunta
+            if (matches[questionId]) {
+                showFeedback("Esta pregunta ya tiene una respuesta asignada", 'error');
+                return;
+            }
+            
+            // Verificar si ya existe un emparejamiento para esta respuesta
+            const existingMatch = Object.values(matches).find(match => match.answerId === answerId);
+            if (existingMatch) {
+                showFeedback("Esta respuesta ya está asignada a otra pregunta", 'error');
+                return;
+            }
+            
+            // Verificar si el emparejamiento es correcto
+            const correctAnswerId = questions.find(q => q.id === questionId).id;
+            const isCorrect = correctAnswerId === answerId;
+            
+            // Obtener el texto de la respuesta
+            const answerText = draggedItem.textContent;
+            
+            // Guardar el emparejamiento
+            matches[questionId] = {
+                answerId: answerId,
+                answerText: answerText,
+                correct: isCorrect
+            };
+            
+            // Actualizar contadores
+            if (isCorrect) {
+                correctMatches++;
+            } else {
+                incorrectMatches++;
+            }
+            
+            // Actualizar la interfaz
+            renderGame();
+            updateScore();
+        }
+
+        // Actualizar el marcador
+        function updateScore() {
+            document.getElementById('correct-count').textContent = correctMatches;
+            document.getElementById('incorrect-count').textContent = incorrectMatches;
+            document.getElementById('total-count').textContent = gameData.length;
+        }
+
+        // Verificar respuestas
+        function checkAnswers() {
+            const totalQuestions = gameData.length;
+            const matchedCount = Object.keys(matches).length;
+            
+            // Verificar si se han emparejado todas las preguntas
+            if (matchedCount < totalQuestions) {
+                showFeedback(`Tienes ${matchedCount} de ${totalQuestions} preguntas respondidas. ¡Completa todas para verificar!`, 'error');
+                return;
+            }
+            
+            // Calcular puntuación
+            const score = correctMatches;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            // Mostrar feedback
+            let message = '';
+            if (percentage === 100) {
+                message = `¡Excelente! Has acertado todas las preguntas (${score}/${totalQuestions}).`;
+                showFeedback(message, 'success');
+            } else if (percentage >= 70) {
+                message = `¡Buen trabajo! Has acertado ${score} de ${totalQuestions} preguntas (${percentage}%).`;
+                showFeedback(message, 'success');
+            } else if (percentage >= 50) {
+                message = `¡No está mal! Has acertado ${score} de ${totalQuestions} preguntas. Sigue practicando.`;
+                showFeedback(message, 'error');
+            } else {
+                message = `Has acertado ${score} de ${totalQuestions} preguntas. Repasa los conceptos y vuelve a intentarlo.`;
+                showFeedback(message, 'error');
+            }
+        }
+
+        // Mostrar mensaje de feedback
+        function showFeedback(message, type) {
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback ${type}`;
+            
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                feedbackElement.className = 'feedback';
+            }, 3000);
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('check-btn').addEventListener('click', checkAnswers);
+        });
+    </script>
+</body>
+</html>

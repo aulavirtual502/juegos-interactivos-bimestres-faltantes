@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sopa de Letras: Tarjetas de Presentación</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8A2BE2 0%, #4169E1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .word-search-section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .word-list-section {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            color: #4169E1;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #f0f4ff;
+        }
+        
+        .instructions {
+            background-color: #f9fbff;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #8A2BE2;
+            font-size: 0.95rem;
+        }
+        
+        .word-search-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            margin: 0 auto;
+            background-color: #f0f5ff;
+            padding: 10px;
+            border-radius: 10px;
+            border: 3px solid #4169E1;
+            user-select: none;
+        }
+        
+        .grid-cell {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            background-color: white;
+            border: 1px solid #d1d9ff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .grid-cell:hover {
+            background-color: #eef2ff;
+        }
+        
+        .grid-cell.selected {
+            background-color: #8A2BE2;
+            color: white;
+            border-color: #8A2BE2;
+        }
+        
+        .grid-cell.found {
+            background-color: #2ecc71;
+            color: white;
+            border-color: #27ae60;
+        }
+        
+        .word-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 500px) {
+            .word-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .word-item {
+            padding: 12px;
+            background-color: #f9fbff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid #e1e8ff;
+            transition: all 0.3s ease;
+        }
+        
+        .word-item.found {
+            background-color: #e8f7ef;
+            border-color: #2ecc71;
+            color: #155724;
+        }
+        
+        .word-check {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background-color: #eef2ff;
+            color: #4169E1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        
+        .word-item.found .word-check {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .word-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #check-word-btn {
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            color: white;
+        }
+        
+        #reset-game-btn {
+            background: linear-gradient(to right, #FF7F50, #FF6347);
+            color: white;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #4169E1;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .message-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-success {
+            background-color: #e8f7ef;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+        }
+        
+        .message-info {
+            background-color: #e8f4ff;
+            color: #004085;
+            border: 2px solid #b8daff;
+            display: block;
+        }
+        
+        .message-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+            display: block;
+        }
+        
+        .victory-message {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            text-align: center;
+            animation: popIn 0.8s ease;
+        }
+        
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .victory-message h2 {
+            color: #4169E1;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .victory-message p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .celebration {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .word-search-grid {
+                grid-template-columns: repeat(12, 1fr);
+            }
+            
+            .grid-cell {
+                width: 24px;
+                height: 24px;
+                font-size: 0.9rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            .grid-cell {
+                width: 22px;
+                height: 22px;
+                font-size: 0.85rem;
+            }
+            
+            .word-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-search"></i> Sopa de Letras</h1>
+            <p class="subtitle">Encuentra las palabras relacionadas con la creación de tarjetas de presentación</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="word-search-section">
+                <h2 class="section-title"><i class="fas fa-grid"></i> Sopa de Letras</h2>
+                
+                <div class="instructions">
+                    <p><strong>Instrucciones:</strong> Haz clic y arrastra para seleccionar las palabras. Pueden estar en horizontal, vertical o diagonal.</p>
+                </div>
+                
+                <div class="word-search-grid" id="word-search-grid">
+                    <!-- La cuadrícula de sopa de letras se generará aquí -->
+                </div>
+            </div>
+            
+            <div class="word-list-section">
+                <h2 class="section-title"><i class="fas fa-list-ul"></i> Palabras a Encontrar (8)</h2>
+                
+                <div class="word-list" id="word-list">
+                    <!-- La lista de palabras se cargará aquí -->
+                </div>
+                
+                <div class="controls">
+                    <button id="reset-game-btn">
+                        <i class="fas fa-redo-alt"></i> Reiniciar Juego
+                    </button>
+                    <button id="check-word-btn" disabled>
+                        <i class="fas fa-check-circle"></i> Verificar Respuesta
+                    </button>
+                </div>
+                
+                <div class="message-container" id="message-container">
+                    <!-- Los mensajes se mostrarán aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-stats">
+            <div class="stat-item">
+                <div class="stat-value" id="found-words">0</div>
+                <div class="stat-label">Encontradas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-words">8</div>
+                <div class="stat-label">Totales</div>
+            </div>
+        </div>
+        
+        <div class="victory-message" id="victory-message">
+            <div class="celebration">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2>¡Felicidades!</h2>
+            <p>Has encontrado todas las palabras.</p>
+            <p>Ahora conoces los conceptos clave para diseñar tarjetas profesionales.</p>
+            <button id="play-again-btn" style="margin-top: 20px;">
+                <i class="fas fa-play-circle"></i> Jugar Nuevamente
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Palabras clave (8 palabras más cortas) - Corregido: USAMOS "DISEÑO" con Ñ
+        const words = [
+            { word: "TARJETA", hint: "Documento de presentación" },
+            { word: "DISEÑO", hint: "Proceso creativo" },
+            { word: "TEXTO", hint: "Contenido escrito" },
+            { word: "COLOR", hint: "Elemento visual" },
+            { word: "LOGO", hint: "Símbolo de empresa" },
+            { word: "PAPEL", hint: "Material para imprimir" },
+            { word: "HOJA", hint: "Donde se imprimen varias" },
+            { word: "IMAGEN", hint: "Elemento gráfico" }
+        ];
+
+        // Tamaño de la cuadrícula (más pequeña)
+        const GRID_SIZE = 12;
+        
+        // Variables del juego
+        let grid = [];
+        let selectedCells = [];
+        let foundWords = [];
+        let isSelecting = false;
+        let startCell = null;
+        let gameCompleted = false;
+
+        // Inicializar el juego
+        function initGame() {
+            // Reiniciar variables
+            grid = [];
+            selectedCells = [];
+            foundWords = [];
+            gameCompleted = false;
+            
+            // Crear cuadrícula vacía
+            createEmptyGrid();
+            
+            // Colocar palabras en la cuadrícula
+            placeWordsInGrid();
+            
+            // Rellenar espacios vacíos con letras aleatorias (incluyendo Ñ)
+            fillEmptyCells();
+            
+            // Renderizar la cuadrícula
+            renderGrid();
+            
+            // Renderizar la lista de palabras
+            renderWordList();
+            
+            // Actualizar estadísticas
+            updateStats();
+            
+            // Ocultar mensaje de victoria
+            document.getElementById('victory-message').style.display = 'none';
+            
+            // Mostrar la cuadrícula
+            document.getElementById('word-search-grid').style.display = 'grid';
+            
+            // Deshabilitar botón de verificar
+            document.getElementById('check-word-btn').disabled = true;
+            
+            // Limpiar mensajes
+            document.getElementById('message-container').style.display = 'none';
+        }
+
+        // Crear cuadrícula vacía
+        function createEmptyGrid() {
+            for (let i = 0; i < GRID_SIZE; i++) {
+                grid[i] = [];
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    grid[i][j] = '';
+                }
+            }
+        }
+
+        // Colocar palabras en la cuadrícula
+        function placeWordsInGrid() {
+            // Direcciones: horizontal, vertical, diagonal
+            const directions = [
+                { dr: 0, dc: 1 },   // horizontal (derecha)
+                { dr: 1, dc: 0 },   // vertical (abajo)
+                { dr: 1, dc: 1 },   // diagonal (abajo derecha)
+            ];
+            
+            // Intentar colocar cada palabra
+            words.forEach(wordObj => {
+                let placed = false;
+                let attempts = 0;
+                const word = wordObj.word;
+                
+                while (!placed && attempts < 50) {
+                    attempts++;
+                    
+                    // Elegir dirección aleatoria
+                    const dir = directions[Math.floor(Math.random() * directions.length)];
+                    
+                    // Elegir posición inicial aleatoria
+                    let row = Math.floor(Math.random() * GRID_SIZE);
+                    let col = Math.floor(Math.random() * GRID_SIZE);
+                    
+                    // Verificar si la palabra cabe en esa posición
+                    const endRow = row + dir.dr * (word.length - 1);
+                    const endCol = col + dir.dc * (word.length - 1);
+                    
+                    if (endRow < 0 || endRow >= GRID_SIZE || endCol < 0 || endCol >= GRID_SIZE) {
+                        continue;
+                    }
+                    
+                    // Verificar si hay conflicto con otras palabras
+                    let conflict = false;
+                    for (let i = 0; i < word.length; i++) {
+                        const r = row + dir.dr * i;
+                        const c = col + dir.dc * i;
+                        
+                        if (grid[r][c] !== '' && grid[r][c] !== word[i]) {
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    
+                    if (conflict) continue;
+                    
+                    // Colocar la palabra en la cuadrícula
+                    for (let i = 0; i < word.length; i++) {
+                        const r = row + dir.dr * i;
+                        const c = col + dir.dc * i;
+                        grid[r][c] = word[i];
+                    }
+                    
+                    placed = true;
+                }
+            });
+        }
+
+        // Rellenar celdas vacías con letras aleatorias (INCLUYENDO Ñ)
+        function fillEmptyCells() {
+            // Letras del alfabeto español incluyendo Ñ
+            const letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ';
+            
+            for (let i = 0; i < GRID_SIZE; i++) {
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    if (grid[i][j] === '') {
+                        grid[i][j] = letters[Math.floor(Math.random() * letters.length)];
+                    }
+                }
+            }
+        }
+
+        // Renderizar la cuadrícula en el DOM
+        function renderGrid() {
+            const gridContainer = document.getElementById('word-search-grid');
+            gridContainer.innerHTML = '';
+            
+            for (let i = 0; i < GRID_SIZE; i++) {
+                for (let j = 0; j < GRID_SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.textContent = grid[i][j];
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    // Agregar eventos para selección
+                    cell.addEventListener('mousedown', handleMouseDown);
+                    cell.addEventListener('mouseover', handleMouseOver);
+                    cell.addEventListener('mouseup', handleMouseUp);
+                    
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+
+        // Renderizar la lista de palabras
+        function renderWordList() {
+            const wordListContainer = document.getElementById('word-list');
+            wordListContainer.innerHTML = '';
+            
+            words.forEach((wordObj, index) => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.dataset.word = wordObj.word;
+                
+                const isFound = foundWords.includes(wordObj.word);
+                if (isFound) {
+                    wordItem.classList.add('found');
+                }
+                
+                wordItem.innerHTML = `
+                    <div class="word-check">${isFound ? '✓' : index + 1}</div>
+                    <div class="word-text">${wordObj.word}</div>
+                `;
+                
+                wordListContainer.appendChild(wordItem);
+            });
+        }
+
+        // Manejar inicio de selección
+        function handleMouseDown(e) {
+            if (gameCompleted) return;
+            
+            isSelecting = true;
+            const cell = e.target;
+            startCell = cell;
+            
+            clearSelection();
+            addToSelection(cell);
+            
+            // Habilitar botón de verificar si hay al menos 2 letras seleccionadas
+            updateCheckButton();
+        }
+
+        // Manejar movimiento del mouse durante selección
+        function handleMouseOver(e) {
+            if (!isSelecting || gameCompleted) return;
+            
+            const cell = e.target;
+            if (cell.classList.contains('grid-cell')) {
+                clearSelection();
+                
+                const startRow = parseInt(startCell.dataset.row);
+                const startCol = parseInt(startCell.dataset.col);
+                const endRow = parseInt(cell.dataset.row);
+                const endCol = parseInt(cell.dataset.col);
+                
+                const dr = endRow - startRow;
+                const dc = endCol - startCol;
+                
+                // Solo permitir selección en línea recta
+                if (dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc)) {
+                    const dirRow = dr === 0 ? 0 : dr / Math.abs(dr);
+                    const dirCol = dc === 0 ? 0 : dc / Math.abs(dc);
+                    
+                    let r = startRow;
+                    let c = startCol;
+                    
+                    while (true) {
+                        const currentCell = document.querySelector(`.grid-cell[data-row="${r}"][data-col="${c}"]`);
+                        if (currentCell) {
+                            addToSelection(currentCell);
+                        }
+                        
+                        if (r === endRow && c === endCol) break;
+                        
+                        r += dirRow;
+                        c += dirCol;
+                    }
+                } else {
+                    addToSelection(startCell);
+                }
+                
+                // Actualizar estado del botón de verificar
+                updateCheckButton();
+            }
+        }
+
+        // Manejar fin de selección
+        function handleMouseUp() {
+            if (!isSelecting) return;
+            isSelecting = false;
+        }
+
+        // Agregar celda a la selección
+        function addToSelection(cell) {
+            if (!cell.classList.contains('selected')) {
+                cell.classList.add('selected');
+                selectedCells.push(cell);
+            }
+        }
+
+        // Limpiar selección
+        function clearSelection() {
+            selectedCells.forEach(cell => {
+                cell.classList.remove('selected');
+            });
+            selectedCells = [];
+            
+            // Deshabilitar botón de verificar
+            document.getElementById('check-word-btn').disabled = true;
+        }
+
+        // Actualizar estado del botón de verificar
+        function updateCheckButton() {
+            const checkBtn = document.getElementById('check-word-btn');
+            checkBtn.disabled = selectedCells.length < 3;
+        }
+
+        // Verificar la palabra seleccionada
+        function checkSelectedWord() {
+            if (selectedCells.length < 3 || gameCompleted) {
+                showMessage('Selecciona al menos 3 letras para formar una palabra', 'warning');
+                return;
+            }
+            
+            // Obtener la palabra de las celdas seleccionadas
+            const selectedWord = selectedCells.map(cell => cell.textContent).join('');
+            
+            // Buscar si coincide con alguna palabra de la lista
+            const matchedWord = words.find(wordObj => 
+                wordObj.word === selectedWord || 
+                wordObj.word === selectedWord.split('').reverse().join('')
+            );
+            
+            if (matchedWord && !foundWords.includes(matchedWord.word)) {
+                // Marcar palabra como encontrada
+                foundWords.push(matchedWord.word);
+                
+                // Marcar celdas como encontradas
+                selectedCells.forEach(cell => {
+                    cell.classList.remove('selected');
+                    cell.classList.add('found');
+                });
+                
+                // Actualizar lista y estadísticas
+                renderWordList();
+                updateStats();
+                
+                // Mostrar mensaje de éxito
+                showMessage(`¡Correcto! Encontraste la palabra "${matchedWord.word}"`, 'success');
+                
+                // Verificar si el juego está completo
+                if (foundWords.length === words.length) {
+                    gameCompleted = true;
+                    setTimeout(() => {
+                        document.getElementById('victory-message').style.display = 'block';
+                    }, 1000);
+                }
+            } else if (foundWords.includes(selectedWord) || foundWords.includes(selectedWord.split('').reverse().join(''))) {
+                showMessage('Ya encontraste esta palabra', 'info');
+                clearSelection();
+            } else {
+                showMessage('Palabra incorrecta. Intenta de nuevo.', 'warning');
+                clearSelection();
+            }
+            
+            // Deshabilitar botón de verificar
+            document.getElementById('check-word-btn').disabled = true;
+        }
+
+        // Mostrar mensaje temporal
+        function showMessage(text, type) {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.textContent = text;
+            messageContainer.className = `message-container message-${type}`;
+            messageContainer.style.display = 'block';
+            
+            setTimeout(() => {
+                messageContainer.style.display = 'none';
+            }, 2000);
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('found-words').textContent = foundWords.length;
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar juego
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('check-word-btn').addEventListener('click', checkSelectedWord);
+            document.getElementById('reset-game-btn').addEventListener('click', initGame);
+            document.getElementById('play-again-btn').addEventListener('click', initGame);
+            
+            // Permitir soltar el mouse fuera de la cuadrícula
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+    </script>
+</body>
+</html>
