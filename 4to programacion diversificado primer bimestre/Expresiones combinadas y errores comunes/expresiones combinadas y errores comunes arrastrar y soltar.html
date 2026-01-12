@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Educativo: Expresiones Combinadas en Python</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            padding: 25px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        
+        h1 {
+            font-size: 2.7rem;
+            margin-bottom: 12px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.4);
+            color: #ffffff;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+            color: #dff9fb;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+        }
+        
+        .panel h2 {
+            font-size: 2rem;
+            margin-bottom: 22px;
+            padding-bottom: 12px;
+            border-bottom: 5px solid #f0f7ff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .panel h2 i {
+            font-size: 1.7rem;
+        }
+        
+        #answers-panel h2 {
+            color: #0c2461;
+            border-bottom-color: #1e3799;
+        }
+        
+        #questions-panel h2 {
+            color: #4a69bd;
+            border-bottom-color: #6a89cc;
+        }
+        
+        .items-container {
+            flex-grow: 1;
+            min-height: 450px;
+            border-radius: 15px;
+            padding: 20px;
+            background-color: #f8fbff;
+            border: 3px dashed #c7ecee;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .item {
+            background: linear-gradient(to right, #ffffff, #f8fbff);
+            border-radius: 14px;
+            padding: 20px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+            border-left: 7px solid #4a69bd;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .answer-item {
+            border-left-color: #0c2461;
+            background: linear-gradient(to right, #ffffff, #e8f6f9);
+        }
+        
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+        }
+        
+        .item.dragging {
+            opacity: 0.8;
+            transform: scale(1.04);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item.dropped {
+            cursor: default;
+            opacity: 0.95;
+        }
+        
+        .item.correct-match {
+            background: linear-gradient(to right, #d5f4e6, #c2e7d3);
+            border-left-color: #27ae60;
+        }
+        
+        .item.incorrect-match {
+            background: linear-gradient(to right, #fadbd8, #f5b7b1);
+            border-left-color: #e74c3c;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 17px 35px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.22);
+            letter-spacing: 0.5px;
+        }
+        
+        #reset-btn {
+            background: linear-gradient(to right, #6a89cc, #82ccdd);
+            color: white;
+        }
+        
+        #reset-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
+            background: linear-gradient(to right, #82ccdd, #98d8e8);
+        }
+        
+        #check-btn {
+            background: linear-gradient(to right, #78e08f, #38ada9);
+            color: white;
+        }
+        
+        #check-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
+            background: linear-gradient(to right, #38ada9, #079992);
+        }
+        
+        .score-board {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+            margin-top: 15px;
+            background: linear-gradient(to bottom, #ffffff, #f8fbff);
+        }
+        
+        .score-board h3 {
+            color: #0c2461;
+            font-size: 1.7rem;
+            margin-bottom: 20px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+        
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .score-value {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #4a69bd;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .score-label {
+            font-size: 1.15rem;
+            color: #555;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .feedback {
+            margin-top: 22px;
+            padding: 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+            font-size: 1.15rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+        }
+        
+        .feedback.success {
+            background: linear-gradient(to right, #d5f4e6, #c2e7d3);
+            color: #155724;
+            border: 2px solid #a3d9b1;
+            display: block;
+        }
+        
+        .feedback.error {
+            background: linear-gradient(to right, #fadbd8, #f5b7b1);
+            color: #721c24;
+            border: 2px solid #f1948a;
+            display: block;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to bottom, #ffffff, #f8fbff);
+        }
+        
+        .instructions h3 {
+            color: #0c2461;
+            font-size: 1.7rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 1.7;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            color: #444;
+        }
+        
+        .match-indicator {
+            font-size: 1rem;
+            padding: 6px 14px;
+            border-radius: 25px;
+            margin-left: 12px;
+            font-weight: 700;
+        }
+        
+        .match-correct {
+            background: linear-gradient(to right, #27ae60, #2ecc71);
+            color: white;
+            box-shadow: 0 3px 8px rgba(39, 174, 96, 0.3);
+        }
+        
+        .match-incorrect {
+            background: linear-gradient(to right, #e74c3c, #ff6b6b);
+            color: white;
+            box-shadow: 0 3px 8px rgba(231, 76, 60, 0.3);
+        }
+        
+        .matched-text {
+            font-size: 1rem;
+            margin-top: 12px;
+            font-weight: 600;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .expression-icon {
+            color: #c7ecee;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .code-example {
+            font-family: 'Courier New', monospace;
+            background-color: #f1f2f6;
+            padding: 4px 10px;
+            border-radius: 5px;
+            border: 1px solid #dfe4ea;
+            margin: 5px 0;
+            font-weight: bold;
+            color: #0c2461;
+        }
+        
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .panel {
+                min-width: 100%;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            button {
+                padding: 14px 24px;
+                font-size: 1.1rem;
+            }
+            
+            .score-container {
+                gap: 30px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 320px;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 1.9rem;
+            }
+            
+            .panel h2 {
+                font-size: 1.7rem;
+            }
+            
+            .score-value {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-code expression-icon"></i> Juego Educativo: Expresiones Combinadas en Python</h1>
+            <p class="subtitle">Arrastra cada respuesta correcta a su pregunta correspondiente. Pon a prueba tu conocimiento sobre expresiones combinadas, orden de evaluación y errores comunes en Python.</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="panel" id="answers-panel">
+                <h2><i class="fas fa-check-circle"></i> Respuestas Correctas</h2>
+                <div class="items-container" id="answers-container">
+                    <!-- Las respuestas correctas se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="panel" id="questions-panel">
+                <h2><i class="fas fa-question-circle"></i> Preguntas sobre Expresiones Combinadas</h2>
+                <div class="items-container" id="questions-container">
+                    <!-- Las preguntas se cargarán aquí -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="reset-btn">
+                <i class="fas fa-redo-alt"></i> Reiniciar Juego
+            </button>
+            <button id="check-btn">
+                <i class="fas fa-check-circle"></i> Verificar Respuestas
+            </button>
+        </div>
+        
+        <div class="score-board">
+            <h3><i class="fas fa-chart-line"></i> Progreso del Aprendizaje</h3>
+            <div class="score-container">
+                <div class="score-item">
+                    <div class="score-value" id="correct-count">0</div>
+                    <div class="score-label">Correctas</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="total-count">10</div>
+                    <div class="score-label">Total Preguntas</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-value" id="incorrect-count">0</div>
+                    <div class="score-label">Incorrectas</div>
+                </div>
+            </div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones del Juego</h3>
+            <ol>
+                <li>Arrastra cada respuesta correcta desde el panel izquierdo y suéltala sobre la pregunta correspondiente en el panel derecho.</li>
+                <li>Cada respuesta solo puede emparejarse con una pregunta específica.</li>
+                <li>Haz clic en "Verificar Respuestas" para comprobar tus resultados y obtener retroalimentación.</li>
+                <li>Usa "Reiniciar Juego" para barajar las preguntas y comenzar de nuevo.</li>
+                <li>Las respuestas correctas se mostrarán en verde y las incorrectas en rojo con indicadores visuales.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Datos del juego actualizados con las preguntas sobre expresiones combinadas
+        const gameData = [
+            {
+                id: 1,
+                question: "Una 'expresión combinada' se refiere a:",
+                answer: "Utilizar varios operadores en una sola instrucción."
+            },
+            {
+                id: 2,
+                question: "En la expresión 2 + 3 * 4, ¿cuál es el resultado correcto y por qué?",
+                answer: "14, porque primero se multiplica 3 * 4 y luego se suma 2."
+            },
+            {
+                id: 3,
+                question: "¿Cuál es la función principal de los paréntesis ( ) en una expresión combinada?",
+                answer: "Controlar el orden en que se realizan las operaciones."
+            },
+            {
+                id: 4,
+                question: "En la expresión (a > b) and (c != d), el orden de evaluación es:",
+                answer: "Primero se evalúan las comparaciones dentro de los paréntesis, luego el and."
+            },
+            {
+                id: 5,
+                question: "¿Cuál de estos es un error común relacionado con los signos = y ==?",
+                answer: "Confundir el signo de asignación (=) con el de comparación (==)."
+            },
+            {
+                id: 6,
+                question: "Si intentas realizar la operación '5' + 10 en Python, ¿qué sucederá?",
+                answer: "Ocurrirá un error, ya que no se pueden mezclar tipos texto y número directamente."
+            },
+            {
+                id: 7,
+                question: "En la expresión resultado = (x + y) * z, ¿qué se evalúa primero?",
+                answer: "La suma x + y porque está entre paréntesis."
+            },
+            {
+                id: 8,
+                question: "La expresión not (edad >= 18) será True cuando:",
+                answer: "edad sea menor a 18."
+            },
+            {
+                id: 9,
+                question: "¿Por qué es importante el orden de evaluación en las expresiones combinadas?",
+                answer: "Porque puede cambiar completamente el resultado final."
+            },
+            {
+                id: 10,
+                question: "El mensaje principal sobre cometer errores en esta lección es que:",
+                answer: "Son una parte natural e importante del proceso de aprendizaje."
+            }
+        ];
+
+        // Variables globales del juego
+        let questions = [];
+        let answers = [];
+        let draggedItem = null;
+        let matches = {};
+        let correctMatches = 0;
+        let incorrectMatches = 0;
+
+        // Inicializar el juego
+        function initGame() {
+            // Mezclar las preguntas y respuestas aleatoriamente
+            const shuffledData = [...gameData].sort(() => Math.random() - 0.5);
+            
+            // Separar preguntas y respuestas
+            questions = shuffledData.map(item => ({
+                id: item.id,
+                text: item.question,
+                correctAnswer: item.answer
+            }));
+            
+            answers = shuffledData.map(item => ({
+                id: item.id,
+                text: item.answer,
+                correctQuestion: item.question
+            }));
+            
+            // Mezclar las preguntas por separado
+            questions = questions.sort(() => Math.random() - 0.5);
+            
+            // Reiniciar emparejamientos
+            matches = {};
+            correctMatches = 0;
+            incorrectMatches = 0;
+            
+            // Actualizar la interfaz
+            renderGame();
+            updateScore();
+            
+            // Ocultar feedback
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        // Renderizar preguntas y respuestas
+        function renderGame() {
+            const questionsContainer = document.getElementById('questions-container');
+            const answersContainer = document.getElementById('answers-container');
+            
+            // Limpiar contenedores
+            questionsContainer.innerHTML = '';
+            answersContainer.innerHTML = '';
+            
+            // Renderizar respuestas (panel izquierdo)
+            answers.forEach(item => {
+                const answerElement = document.createElement('div');
+                answerElement.className = 'item answer-item';
+                answerElement.id = `answer-${item.id}`;
+                answerElement.textContent = item.text;
+                answerElement.draggable = true;
+                answerElement.dataset.id = item.id;
+                
+                // Agregar indicador si ya está emparejado
+                const matchedQuestionId = Object.keys(matches).find(key => matches[key].answerId === item.id);
+                if (matchedQuestionId) {
+                    const matchStatus = matches[matchedQuestionId].correct ? 'correct-match' : 'incorrect-match';
+                    answerElement.classList.add('dropped', matchStatus);
+                    
+                    const indicator = document.createElement('span');
+                    indicator.className = `match-indicator ${matches[matchedQuestionId].correct ? 'match-correct' : 'match-incorrect'}`;
+                    indicator.textContent = matches[matchedQuestionId].correct ? '✓ Correcta' : '✗ Incorrecta';
+                    answerElement.appendChild(indicator);
+                }
+                
+                answersContainer.appendChild(answerElement);
+            });
+            
+            // Renderizar preguntas (panel derecho)
+            questions.forEach(item => {
+                const questionElement = document.createElement('div');
+                questionElement.className = 'item';
+                questionElement.id = `question-${item.id}`;
+                questionElement.textContent = item.text;
+                questionElement.dataset.id = item.id;
+                
+                // Si ya hay un emparejamiento, mostrar la respuesta emparejada
+                if (matches[item.id]) {
+                    const matchStatus = matches[item.id].correct ? 'correct-match' : 'incorrect-match';
+                    questionElement.classList.add('dropped', matchStatus);
+                    
+                    const indicator = document.createElement('span');
+                    indicator.className = `match-indicator ${matches[item.id].correct ? 'match-correct' : 'match-incorrect'}`;
+                    indicator.textContent = matches[item.id].correct ? '✓ Correcta' : '✗ Incorrecta';
+                    questionElement.appendChild(indicator);
+                    
+                    // Mostrar la respuesta emparejada
+                    const matchedAnswer = answers.find(a => a.id == matches[item.id].answerId);
+                    const answerLabel = document.createElement('div');
+                    answerLabel.className = 'matched-text';
+                    answerLabel.style.color = matches[item.id].correct ? '#27ae60' : '#e74c3c';
+                    answerLabel.textContent = `Respuesta: ${matchedAnswer.text}`;
+                    questionElement.appendChild(answerLabel);
+                }
+                
+                questionsContainer.appendChild(questionElement);
+            });
+            
+            // Agregar event listeners para arrastrar y soltar
+            setupDragAndDrop();
+        }
+
+        // Configurar eventos de arrastrar y soltar
+        function setupDragAndDrop() {
+            // Elementos arrastrables (respuestas)
+            const draggables = document.querySelectorAll('.answer-item');
+            const droppables = document.querySelectorAll('#questions-container .item');
+            
+            // Eventos para elementos arrastrables
+            draggables.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            // Eventos para elementos donde se pueden soltar
+            droppables.forEach(item => {
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // Manejadores de eventos de arrastrar y soltar
+        function handleDragStart(e) {
+            // Solo permitir arrastrar si no está ya emparejado
+            if (!this.classList.contains('dropped')) {
+                draggedItem = this;
+                this.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', this.dataset.id);
+            }
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedItem = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            // Solo resaltar si no tiene ya un emparejamiento
+            if (!this.classList.contains('dropped')) {
+                this.style.background = 'linear-gradient(to right, #e8f6f9, #d4ecf1)';
+            }
+        }
+
+        function handleDragLeave() {
+            this.style.background = '';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.style.background = '';
+            
+            // Solo permitir soltar si no está ya emparejado
+            if (this.classList.contains('dropped') || !draggedItem) return;
+            
+            const answerId = parseInt(draggedItem.dataset.id);
+            const questionId = parseInt(this.dataset.id);
+            
+            // Verificar si ya existe un emparejamiento para esta pregunta
+            if (matches[questionId]) return;
+            
+            // Verificar si ya existe un emparejamiento para esta respuesta
+            const existingMatch = Object.values(matches).find(match => match.answerId === answerId);
+            if (existingMatch) return;
+            
+            // Verificar si el emparejamiento es correcto
+            const correctAnswerId = answers.find(a => a.id === answerId).id;
+            const isCorrect = correctAnswerId === questionId; // Verificar si la respuesta coincide con la pregunta
+            
+            // Guardar el emparejamiento
+            matches[questionId] = {
+                answerId: answerId,
+                correct: isCorrect
+            };
+            
+            // Actualizar contadores
+            if (isCorrect) {
+                correctMatches++;
+            } else {
+                incorrectMatches++;
+            }
+            
+            // Actualizar la interfaz
+            renderGame();
+            updateScore();
+            
+            // Dar retroalimentación inmediata
+            if (isCorrect) {
+                showTemporaryFeedback("¡Correcto! Has emparejado adecuadamente.", "success", 1500);
+            } else {
+                showTemporaryFeedback("Emparejamiento incorrecto. Intenta de nuevo.", "error", 1500);
+            }
+        }
+
+        // Mostrar retroalimentación temporal
+        function showTemporaryFeedback(message, type, duration) {
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback ${type}`;
+            
+            // Ocultar después del tiempo especificado
+            setTimeout(() => {
+                if (!feedbackElement.textContent.includes("Tienes") && !feedbackElement.textContent.includes("Excelente") && 
+                    !feedbackElement.textContent.includes("Buen trabajo") && !feedbackElement.textContent.includes("No está mal")) {
+                    feedbackElement.className = 'feedback';
+                }
+            }, duration);
+        }
+
+        // Actualizar el marcador
+        function updateScore() {
+            document.getElementById('correct-count').textContent = correctMatches;
+            document.getElementById('incorrect-count').textContent = incorrectMatches;
+            document.getElementById('total-count').textContent = gameData.length;
+        }
+
+        // Verificar respuestas
+        function checkAnswers() {
+            const totalQuestions = gameData.length;
+            const matchedCount = Object.keys(matches).length;
+            
+            // Verificar si se han emparejado todas las preguntas
+            if (matchedCount < totalQuestions) {
+                showFeedback(`Tienes ${matchedCount} de ${totalQuestions} emparejados. ¡Completa todas las preguntas para verificar tu conocimiento sobre expresiones combinadas en Python!`, 'error');
+                return;
+            }
+            
+            // Calcular puntuación
+            const score = correctMatches;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            // Mostrar feedback
+            let message = '';
+            if (percentage === 100) {
+                message = `¡Excelente! Has acertado todas las preguntas (${score}/${totalQuestions}). ¡Dominas completamente las expresiones combinadas en Python!`;
+                showFeedback(message, 'success');
+            } else if (percentage >= 80) {
+                message = `¡Muy bien! Has acertado ${score} de ${totalQuestions} preguntas (${percentage}%). Tienes un excelente entendimiento del orden de evaluación y expresiones combinadas.`;
+                showFeedback(message, 'success');
+            } else if (percentage >= 60) {
+                message = `¡Buen trabajo! Has acertado ${score} de ${totalQuestions} preguntas. Tienes una buena base sobre expresiones combinadas en Python.`;
+                showFeedback(message, 'success');
+            } else if (percentage >= 40) {
+                message = `Has acertado ${score} de ${totalQuestions} preguntas. Es un buen comienzo, pero necesitas repasar el orden de evaluación y uso de paréntesis en Python.`;
+                showFeedback(message, 'error');
+            } else {
+                message = `Has acertado ${score} de ${totalQuestions} preguntas. Te recomiendo revisar los fundamentos de expresiones combinadas antes de continuar.`;
+                showFeedback(message, 'error');
+            }
+        }
+
+        // Mostrar mensaje de feedback
+        function showFeedback(message, type) {
+            const feedbackElement = document.getElementById('feedback');
+            feedbackElement.textContent = message;
+            feedbackElement.className = `feedback ${type}`;
+            
+            // Ocultar después de 6 segundos
+            setTimeout(() => {
+                feedbackElement.className = 'feedback';
+            }, 6000);
+        }
+
+        // Inicializar cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            
+            // Event listeners para botones
+            document.getElementById('reset-btn').addEventListener('click', initGame);
+            document.getElementById('check-btn').addEventListener('click', checkAnswers);
+        });
+    </script>
+</body>
+</html>
